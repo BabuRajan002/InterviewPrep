@@ -1,70 +1,72 @@
-# Month 1 – DevOps/SRE Interview Preparation Plan
+# Month 1 – Python + System Design (DevOps/SRE Focus)
 
 ## 📌 Overview
 - Duration: 4 weeks (Month 1)
-- Focus: Python (daily), System Design (2 weeks), Linux + Networking
-- Goal: Build strong foundations in scripting, system design, and troubleshooting
+- Focus: 
+  - Weeks 1–2 → Python for DevOps
+  - Weeks 3–4 → System Design (DevOps/SRE flavor)
+- Goal: Build strong scripting skills and system design foundations before moving to Linux, Networking, Docker, K8s, etc.
 
 ---
 
-## Week 1: Python Foundations + Linux Core
+## Week 1: Python Foundations for DevOps
 
 | Day | Topic | Sub-Topics / Practice |
 |-----|-------|------------------------|
-| Mon | Python – File Handling | Read/write files, CSV, JSON; parse logs, rotate backups |
-| Tue | Python – OS Module | File/dir mgmt, permissions, env vars (`os`, `pathlib`) |
-| Wed | Linux – Processes | ps, top, signals, background jobs, `/proc` |
-| Thu | Python – Subprocess (Basics) | Run commands, capture output, error handling |
-| Fri | Linux – Debugging | strace, lsof, dmesg, journalctl |
-| Sat | Python + Linux Project | Build Linux health-check script (disk, CPU, uptime) |
-| Sun | Review & Mock | Revise + script: "Check and restart service if down" |
+| Mon | File Handling | Open/read/write files, CSV/JSON parsing, log analysis |
+| Tue | OS Module | File/dir mgmt, env vars, permissions (`os`, `pathlib`) |
+| Wed | Subprocess Basics | Run Linux cmds, capture stdout/stderr, error handling |
+| Thu | Advanced File Handling | Regex parsing, `collections.Counter`, `defaultdict` |
+| Fri | Subprocess Advanced | Popen, piping, parallel commands |
+| Sat | Mini Project | Linux health-check script (disk, CPU, uptime) |
+| Sun | Review & Mock | Script: check a process → restart if not running |
 
 ---
 
-## Week 2: Python Advanced + Networking Basics
+## Week 2: Python Advanced for DevOps
 
 | Day | Topic | Sub-Topics / Practice |
 |-----|-------|------------------------|
-| Mon | Python – Advanced File Handling | Regex for log parsing, collections (`Counter`, `defaultdict`) |
-| Tue | Networking – TCP/IP | Handshake, sockets, traceroute, MTU |
-| Wed | Python – Subprocess (Advanced) | Popen, piping, parallel cmds |
-| Thu | Networking – DNS & HTTP | DNS resolution, curl, headers, caching |
-| Fri | Python – JSON/YAML Parsing | `json`, PyYAML; convert configs; safe_load |
-| Sat | Networking Project | Write Python script → ping sweep + latency report |
-| Sun | Review & Mock | Networking troubleshooting + Python log parser |
+| Mon | JSON Handling | load, dump, pretty-print, merging configs |
+| Tue | YAML Handling | PyYAML, safe_load, convert YAML↔JSON |
+| Wed | Requests & APIs | GET/POST, headers, params, error handling |
+| Thu | API Auth & Retry | Tokens, sessions, backoff, exceptions |
+| Fri | Threading & Multiprocessing | Parallel health checks, API calls |
+| Sat | Mini Project | Script: Trigger Jenkins job via API, poll until completion |
+| Sun | Review & Mock | Script: Parse Nginx logs → top 5 IPs hitting 500 errors |
 
 ---
 
-## Week 3: System Design (DevOps/SRE Focus, Part 1)
+## Week 3: System Design (DevOps/SRE Focus – Part 1)
 
 | Day | Topic | Sub-Topics / Practice |
 |-----|-------|------------------------|
-| Mon | System Design Basics | CAP theorem, availability vs consistency, scalability patterns |
-| Tue | CI/CD at Scale | Design pipelines for 10k engineers, zero-downtime deployments |
-| Wed | Storage & Logging | Log aggregation (ELK/BigQuery), scaling ingestion pipelines |
+| Mon | Foundations | CAP theorem, availability vs consistency, scalability patterns |
+| Tue | CI/CD at Scale | Pipelines for 10k engineers, zero-downtime deployments |
+| Wed | Logging Systems | Log aggregation (ELK, GCP Logging, BigQuery) |
 | Thu | Monitoring Systems | Metrics pipeline (Prometheus, Grafana), alerting at scale |
-| Fri | Python Practice | Script: Parse logs → push metrics into Prometheus |
-| Sat | Design Case Study | "Design a logging system for 1M events/sec" |
-| Sun | Review & Mock | Walk through CI/CD + monitoring design interview |
+| Fri | Python Tie-In | Script: Parse logs → push metrics into Prometheus |
+| Sat | Case Study | Design a logging system handling 1M events/sec |
+| Sun | Review & Mock | CI/CD + monitoring system design interview |
 
 ---
 
-## Week 4: System Design (Part 2) + Networking Deep Dive
+## Week 4: System Design (DevOps/SRE Focus – Part 2)
 
 | Day | Topic | Sub-Topics / Practice |
 |-----|-------|------------------------|
 | Mon | Kubernetes at Scale | Multi-region clusters, HA API servers, etcd design |
-| Tue | Networking in System Design | CDN, Anycast, load balancing (L4 vs L7) |
+| Tue | Networking in Design | CDN, Anycast, L4 vs L7 load balancing |
 | Wed | Resiliency & Reliability | Failover, retries, circuit breakers, chaos testing |
 | Thu | Hybrid Cloud & Security | VPN, Interconnect, IAM, service mesh |
-| Fri | Python Practice | Script: Call Jenkins API, monitor job status |
-| Sat | Design Case Study | "Design a multi-region K8s platform with HA" |
-| Sun | Review & Mock | Full mock design interview + Python troubleshooting |
+| Fri | Python Tie-In | Script: Call K8s API → export pod info to YAML |
+| Sat | Case Study | Design a multi-region K8s platform with HA |
+| Sun | Review & Mock | Full mock design interview (system design + Python task) |
 
 ---
 
 ## ✅ End of Month 1 – Outcomes
 - 14+ Python mini-projects (file handling, subprocess, APIs, logs, YAML/JSON).
-- Strong Linux troubleshooting knowledge (processes, strace, lsof).
-- Networking fundamentals (TCP/IP, DNS, HTTP, load balancing).
-- 4 System Design case studies with DevOps/SRE flavor.
+- Strong Python foundations in **automation, APIs, log parsing, monitoring integration**.
+- 4+ System Design case studies focused on **CI/CD, monitoring, K8s, hybrid infra**.
+- Ready to move into Linux + Networking in Month 2 with solid Python + design base.
