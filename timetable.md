@@ -13,7 +13,7 @@
 
 | Day | Topic | Sub-Topics / Practice | References | My Notes/Refs |
 |-----|-------|------------------------|------------|---------------|
-| Mon | File Handling | Open/read/write files, CSV/JSON parsing, log analysis | [RealPython – File Handling](https://realpython.com/read-write-files-python/) | | 
+| Mon | File Handling | Open/read/write files, CSV/JSON parsing, log analysis | [RealPython – File Handling](https://realpython.com/read-write-files-python/) |https://www.youtube.com/watch?v=qJPw_IVEyfc&list=PLhTE7-JU1rhaVhGUNlKBVbdAt5r9zYVnP&index=37 | 
 | Tue | OS Module | File/dir mgmt, env vars, permissions (`os`, `pathlib`) | [GeeksforGeeks – os module](https://www.geeksforgeeks.org/os-module-python-examples/) | |
 | Wed | Subprocess Basics | Run Linux cmds, capture stdout/stderr, error handling | [RealPython – Subprocess](https://realpython.com/python-subprocess/) | |
 | Thu | Advanced File Handling | Regex parsing, `collections.Counter`, `defaultdict` | [Python Docs – re](https://docs.python.org/3/library/re.html), [collections](https://docs.python.org/3/library/collections.html) | |
