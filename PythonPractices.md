@@ -14,6 +14,89 @@ Got it 👍 — here’s your **10 DevOps-oriented file-handling practice proble
 * *Hint:* use iteration for head, `collections.deque` for tail.
 
 ---
+Perfect ✅ — here’s how you can **document your solution + feedback** in Markdown (ready for your repo). I’ll show it for **Problem 1** using your code and my review.
+
+---
+
+# Problem 1: Read & Preview Safely
+
+**File:** `notes.txt`
+
+### 📜 My Solution
+
+```python
+with open('notes.txt', 'r') as note:
+    lst = note.readlines()
+
+for i in range(3):
+    print(lst[i])
+
+print(f'The total line count is {len(lst)}')
+```
+
+### 📝 Explanation
+
+* Used `with open(...)` to safely manage the file.
+* Read all lines with `readlines()`.
+* Printed the first 3 lines and total count.
+* `with open` is preferred because the file is **automatically closed** when the block exits, even on errors.
+
+---
+
+### ✅ Feedback
+
+* ✔️ Correct use of `with open`.
+* ✔️ Output is correct for small files.
+* ⚠️ `readlines()` loads the whole file into memory → not ideal for **very large logs**.
+* ⚠️ Could strip newlines (`.strip()`) for cleaner output.
+
+---
+
+### 🔧 Suggested Improvement
+
+```python
+from itertools import islice
+
+# Print first 3 lines without reading full file
+with open("notes.txt", "r") as note:
+    for line in islice(note, 3):
+        print(line.strip())
+
+# Count lines efficiently (streaming)
+with open("notes.txt", "r") as note:
+    count = sum(1 for _ in note)
+print(f"Total line count: {count}")
+```
+
+---
+
+### 💡 Interview Tip
+
+* Interviewers may ask: *“How do you get both head & tail of a large file efficiently?”*
+* Use `collections.deque` for the last N lines without reading everything into memory.
+
+```python
+from collections import deque
+from itertools import islice
+
+with open("notes.txt") as f:
+    head = list(islice(f, 3))      # first 3 lines
+with open("notes.txt") as f:
+    tail = deque(f, maxlen=3)      # last 3 lines
+print("Head:", [h.strip() for h in head])
+print("Tail:", [t.strip() for t in tail])
+```
+
+---
+
+👉 This Markdown format will let you track:
+
+* Your code
+* Explanation
+* Reviewer feedback
+* Improved version
+
+---
 
 ## 2) Status Class Tally (Basic)
 
