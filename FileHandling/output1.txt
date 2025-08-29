@@ -1,0 +1,4 @@
+Hello Devops
+Welcome to Python
+File handling us fun
+Appended line here
