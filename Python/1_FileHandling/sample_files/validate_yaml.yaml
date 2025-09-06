@@ -1,0 +1,13 @@
+services:
+  - name: api
+    image: example/api:1.2.3
+    replicas: 3
+    port: 8080
+  - name: web
+    image: example/web:4.5.6
+    port: 80
+  - name: worker
+    image: example/worker:2.1.0
+    replicas: 2
+    port: 9090
+required_keys: ["name","image","replicas","port"]

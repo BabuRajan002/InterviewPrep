@@ -34,4 +34,4 @@ def parsing_nginx(path: str) -> None:
 
 
 if __name__ == "__main__":
-  parsing_nginx("/Users/babus/Desktop/repos/InterviewPrep/Python/1_FileHandling/sample_files/nginx_sample.log")
+  parsing_nginx("/Users/babus/Desktop/repos/InterviewPrep/Python/1_FileHandling/sample_files/parsing_nginx.log")
