@@ -22,7 +22,7 @@ def parsing_nginx(path: str) -> None:
          else:
             count_500 += 1
       endpoints_counts = Counter(endpoints)
-      top_three_endpoints = endpoints_counts.most_common(3)
+      top_three_endpoints = endpoints_counts.most_common(3) #Return list of tuples containing the n most common elements and their counts
       
          
          
