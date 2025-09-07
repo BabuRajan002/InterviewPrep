@@ -1,0 +1,3 @@
+app:
+  name: wrong
+    image: ghcr.io/acme/wrong:1.0  # wrong indent on purpose
