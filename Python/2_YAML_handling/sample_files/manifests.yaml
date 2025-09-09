@@ -1,18 +1,17 @@
----
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: web }
+metadata: {name: web}
 spec:
   replicas: 2
   template:
     spec:
       containers:
         - name: web
-          image: ghcr.io/acme/web:1.0.0
+          image: ghcr.io/acme/web:latest
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: web }
+metadata: {name: web}
 spec:
   type: ClusterIP
-  ports: [{ port: 80, targetPort: 8080 }]
+  ports: [{port: 80, targetPort: 8080}]
