@@ -1,0 +1,11 @@
+2025-09-08T08:01:00Z INFO start request id=abc123
+2025-09-08T08:01:01Z ERROR code=E_CONN_RESET message="connection reset by peer"
+2025-09-08T08:01:03Z WARN code=W_SLOW_QUERY duration_ms=1200
+2025-09-08T08:01:05Z ERROR code=E_TIMEOUT message="upstream timeout"
+2025-09-08T08:01:07Z INFO end request id=abc123
+2025-09-08T08:02:00Z ERROR code=E_CONN_RESET retrying=true
+2025-09-08T08:03:00Z ERROR code=E_DISK_FULL message="disk space low"
+2025-09-08T08:04:00Z ERROR code=E_PERM_DENIED message="permission denied"
+2025-09-08T08:05:00Z WARN code=W_CACHE_MISS cache=users
+2025-09-08T08:06:00Z ERROR code=E_TIMEOUT message="upstream timeout"
+2025-09-08T08:07:00Z ERROR code=E_DISK_FULL message="disk space critically low"

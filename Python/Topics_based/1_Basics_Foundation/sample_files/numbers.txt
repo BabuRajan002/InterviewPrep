@@ -1,0 +1,9 @@
+# Integers with comments and blanks
+10
+20
+
+# ignore this
+-5
+15x
+  30
+# another comment
