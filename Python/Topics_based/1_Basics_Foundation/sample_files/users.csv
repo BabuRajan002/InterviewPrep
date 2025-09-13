@@ -1,0 +1,12 @@
+name,email,role
+Alice,alice@example.com,developer
+Bob,bob@example.com,devops
+Charlie,charlie@example.com,devops
+Eve,eve@example.com,security
+Mallory,mallory@example.com,devops
+Trent,trent@example.com,developer
+Oscar,oscar@example.com,devops
+Peggy,peggy@example.com,qa
+Sybil,sybil@example.com,devops
+Victor,victor@example.com,security
+Walter,walter@example.com,devops
