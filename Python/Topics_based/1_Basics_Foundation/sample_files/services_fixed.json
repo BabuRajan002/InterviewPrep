@@ -1,0 +1,5 @@
+{
+  "name": "worker",
+  "image": "example/worker:2.1.0",
+  "replicas": 1
+}

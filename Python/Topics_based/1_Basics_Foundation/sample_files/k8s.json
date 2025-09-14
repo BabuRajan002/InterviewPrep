@@ -1,0 +1,7 @@
+{
+  "services": [
+    {"name": "api", "image": "example/api:1.2.3", "replicas": 2},
+    {"name": "web", "image": "example/web:4.5.6"},
+    {"name": "worker", "replicas": 1}
+  ]
+}
