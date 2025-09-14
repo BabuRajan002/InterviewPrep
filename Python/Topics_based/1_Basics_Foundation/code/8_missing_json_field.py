@@ -11,9 +11,7 @@ def missing_field(path: str) -> None:
             keys_list = service.keys()
             missing_keys = list(set(original_keys) - set(keys_list))
             if len(missing_keys) > 0:
-                print(f"{service['name']} -> missing: {missing_keys[0]}")
-
-                
+                print(f"{service['name']} -> missing: {missing_keys[0]}")          
         
 
 
