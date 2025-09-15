@@ -1,0 +1,7 @@
+{
+  "items": [
+    {"metadata": {"name": "pod-1"}, "status": {"phase": "Running"}},
+    {"metadata": {"name": "pod-2"}, "status": {"phase": "CrashLoopBackOff"}},
+    {"metadata": {"name": "pod-3"}, "status": {"phase": "Pending"}}
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "resources": [
+    {
+      "type": "google_compute_instance",
+      "name": "web-1",
+      "instances": [
+        {"attributes": {"zone": "us-central1-a"}}
+      ]
+    },
+    {
+      "type": "google_compute_instance",
+      "name": "web-2",
+      "instances": [
+        {"attributes": {"zone": "us-east1-b"}}
+      ]
+    },
+    {
+      "type": "google_sql_database_instance",
+      "name": "db-main",
+      "instances": [
+        {"attributes": {"region": "us-central1"}}
+      ]
+    }
+  ]
+}
