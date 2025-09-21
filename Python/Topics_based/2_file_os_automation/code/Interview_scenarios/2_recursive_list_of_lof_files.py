@@ -8,9 +8,9 @@ def recursive_log_files(path: str | Path="./source_dir") -> List[Path]:
     if not dir_path.exists():
         raise FileNotFoundError(dir_path)
     
-    logs = [f for f in dir_path.rglob("*.log") if f.is_file()]
+    logs = [f for f in dir_path.rglob("*.log") if f.is_file()] #Recursive output
     
-    return sorted(logs, key=lambda d: d.name )
+    return sorted(logs, key=lambda d: d.as_posix() ) #Sorts the result with its relative path! Not only with the filename
     
 
 if __name__ == "__main__":
