@@ -12,22 +12,20 @@ def file_age_report(path: str | Path="./source_dir_q3") -> List[tuple[str, str, 
     now = datetime.now(timezone.utc)
     files = sorted((f for f in dir_path.rglob("*.log") if f.is_file()), key=lambda f: f.as_posix())
     
-    list_of_files: List[tuple[str, str, int]] = []
-    for f in files:      
-      modified_date = datetime.fromtimestamp(f.stat().st_mtime, tz=timezone.utc)      
-      file_age = (now - modified_date).days
-    #   print(str(f.relative_to("./source_dir_q3")), file_age.days)
-      list_of_files.append((str(f.relative_to(dir_path)), modified_date.isoformat().replace('+00:00', 'Z'), file_age.days))
-    return list_of_files
+    out: List[tuple[str, str, int]] = []
+    for f in files:
+        mtime = datetime.fromtimestamp(f.stat().st_mtime, tz=timezone.utc)
+        age_days = (now - mtime).days
+        rel = str(f.relative_to(dir_path))
+        iso = mtime.isoformat().replace("+00:00", "Z")  # ISO format
+        out.append((rel, iso, age_days))
+    return out
 
 
 if __name__ == "__main__":
-    files_details = file_age_report("./source_dir_q3")
-    if files_details:
-     for file in files_details:
-        print(file)
-    else:
-       print("empty dir")
+   for rel, iso, days in file_age_report("./source_dir_q3"):
+       print(f"{rel:20} {iso} {days} days")
+
     
 
     
