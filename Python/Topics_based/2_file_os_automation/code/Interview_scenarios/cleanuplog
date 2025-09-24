@@ -1,0 +1,6 @@
+2025-09-24T16:26:47Z DRYRUN ancient.log age=100
+2025-09-24T16:26:47Z DRYRUN logs/debug.log age=60
+2025-09-24T16:26:47Z DRYRUN old.log age=40
+2025-09-24T16:33:08Z DRYRUN ancient.log age=100
+2025-09-24T16:33:08Z DRYRUN logs/debug.log age=60
+2025-09-24T16:33:08Z DRYRUN old.log age=40
