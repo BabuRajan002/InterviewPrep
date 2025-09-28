@@ -46,7 +46,7 @@ if __name__ == "__main__":
     log_files, val, days = max_delete("./source_dir_q6", 30, 4, ["access.log", "keep*.log"], True)
     now_date = datetime.now(timezone.utc).isoformat(timespec="seconds").replace('+00:00', 'Z')
     for file, day in zip(log_files, days):
-     with open('./cleanuplog', 'a', encoding='utf-8') as f:
+     with open('./cleanuplog.txt', 'a', encoding='utf-8') as f:
         f.write(f"{now_date} {'DRYRUN' if val else 'DELETE'} {file} age={day}\n")
 
 # #Chat GPT Version
