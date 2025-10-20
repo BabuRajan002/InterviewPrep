@@ -10,6 +10,7 @@ class FactorialLoop:
             factorial = factorial * i
         return factorial
 
-if __name__ == "__main__":
-    factorial_res = FactorialLoop(3)
-    print(factorial_res.solve())
+# if __name__ == "__main__":
+factorial_res = FactorialLoop(3)
+print(factorial_res.solve())
+print(type(factorial_res))
