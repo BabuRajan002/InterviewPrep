@@ -17,6 +17,9 @@ class Node:
 
     @staticmethod
     def print_list(head):
+        if not head:
+            print("None")
+            return
         current = head
         while current:
             print(current.val, end="->") 
@@ -24,34 +27,37 @@ class Node:
 
     @staticmethod
     def remove_element(head, value):
-        if head.val == value:
-            head = head.next
-        else:
-            temp = head
-            while temp.next != None:
-                if temp.next.val == value:
-                    temp.next = temp.next.next
-                else:
-                    temp = temp.next
-        return temp.next
 
-    # def delete_node(self, val):
-    #     if self.head.data == val:
-    #         self.head = self.head.next
-    #     else:
-    #         temp = self.head
-    #         while temp.next != None:
-    #             if temp.next.data == val:
-    #                 temp.next = temp.next.next
-    #                 break
-    #             else:
-    #                 temp = temp.next 
+        while head and head.val == value:
+            head = head.next
+        
+        temp = head
+        while temp and temp.next:
+              if temp.next.val == value:
+                   temp.next = temp.next.next
+              else:
+                    temp = temp.next
+        return head
 
 if __name__ == "__main__":
-    ll = Node.build_list([1,2,3,4,5,6])
+    ll = Node.build_list([])
     print("Before deleting")
     Node.print_list(ll)
-    after_delete = Node.remove_element(ll,5)
-    print("After remove the element")
+    after_delete = Node.remove_element(ll,6)
+    print("\nAfter remove the element")
     Node.print_list(after_delete)
+
+#Leetcode version
+# class Solution:
+#     def removeElements(self, head: Optional[ListNode], val: int) -> Optional[ListNode]:
+#         while head and head.val == val:
+#             head = head.next
+        
+#         temp = head
+#         while temp and temp.next:
+#             if temp.next.val == val:
+#                 temp.next = temp.next.next
+#             else:
+#                 temp = temp.next
+#         return head
     
