@@ -13,12 +13,12 @@ class SumofFirstNNaturalNumbers:
         self.n = n
         
     def solve(self):
-        sum = 0
-        for i in range(1,self.n+1):
-            sum += i
-        return sum
+        n = self.n
+        sum = n/2 * (n +1)
+        return int(sum)
+        
 
 if __name__ == "__main__":
-    sum_result = SumofFirstNNaturalNumbers(13)
+    sum_result = SumofFirstNNaturalNumbers(5)
     print(sum_result.solve())
 
