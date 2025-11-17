@@ -28,5 +28,10 @@ while(condition check){
 ## Note: For and while loops are interchangeable
 
 - There is no difference in terms of performance if we compare both the loops
+- We can use any loops bases on our requirement! 
 
+# Continue and Break! 
 
+- As soon as we encounter the `continue` it will be treated as a last statement of current iteration. So the Loop continues!
+
+# Updation operators: (Not available in Python) 
