@@ -1,16 +1,19 @@
-import string
 class Pangram:
     def __init__(self, s):
         self.s = s
         
     def check(self):
-        alphabet_set = set(string.ascii_lowercase)
-        sentence_set = set(self.s)
-
-        return alphabet_set.issubset(sentence_set)
-
-
+       sentence = self.s.strip().lower().replace(" ","")
+       attend = ['False']*26
+       counter = 0
+       for ch in sentence:
+            if attend[(ord(ch)-ord('a'))] == 'False':
+                  attend[(ord(ch)-ord('a'))] = 'True'
+                  counter += 1
+       return counter==26
     
 if __name__ == "__main__":
-    pangram = Pangram("The quick brown fox jumps over the lazy dog")
-    print(pangram.check())
+    pan = Pangram('The quick brown fox jumps over the dog')
+    print(pan.check())
+
+
