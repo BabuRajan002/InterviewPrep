@@ -3,10 +3,9 @@ class Solution:
         self.n = n
         
     def reverseBits(self):
-        n = self.n
-        deci_number = str(int(n,2))
-        return deci_number[::-1]
+        n = self.n[::-1]
+        return int(n,2)
 
 if __name__ == "__main__":
-    reversebits = Solution('00000010100101000001111010011100')
+    reversebits = Solution('11111111111111111111111111111101')
     print(reversebits.reverseBits())

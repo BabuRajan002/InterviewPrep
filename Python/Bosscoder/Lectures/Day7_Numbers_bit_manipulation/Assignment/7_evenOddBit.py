@@ -6,21 +6,16 @@ class EvenOddBit:
         num = self.n
         even = 0
         odd = 0
-        cnt = 0
+        idx = 0
         while num != 0:
-            val = num & 1
-            
-            if val == 1 and cnt % 2 == 0:
-                even += 1
-                cnt += 1                              
-            elif val == 1:
-                odd += 1
-                cnt += 1
-            cnt += 1
-            num >>= 1
+          if num & 1 and idx % 2 == 0:
+              even += 1
+          elif num & 1 and idx % 2 != 0: 
+              odd += 1
+          num >>= 1
+          idx += 1
         return [even, odd]
-
 if __name__ == "__main__":
-    eo = EvenOddBit(17)
+    eo = EvenOddBit(50)
     print(eo.solve())
 

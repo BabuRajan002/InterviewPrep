@@ -119,3 +119,8 @@
 ![systemd](<Screenshot 2025-12-01 at 7.11.57 AM.png>)
 
 ![alt text](<Screenshot 2025-12-01 at 7.14.41 AM.png>)
+
+- Unit files are written in three locations: 
+- /etc/systemd/system - Administrator environment, highest priority 
+- `/run/systemd/system` - non-persistent
+- `/usr/lib/systemd/system` - Package provided, lowest priority

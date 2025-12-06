@@ -18,7 +18,7 @@ class Alternate:
 
 
 if __name__ == "__main__":
-    alter = Alternate(0)
+    alter = Alternate(67)
     print(alter.check())
 
             
