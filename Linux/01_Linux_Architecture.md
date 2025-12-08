@@ -124,3 +124,23 @@
 - /etc/systemd/system - Administrator environment, highest priority 
 - `/run/systemd/system` - non-persistent
 - `/usr/lib/systemd/system` - Package provided, lowest priority
+
+# Managing resource allocation:
+
+- Systemd can be integrated with cgroups
+- Cgroups is offered by Linux kernal
+- Crgoups can be used to limit resource availability to systemd services
+- Relevant parameters in Cgroup v1:
+  - CPU Accounting, CPUQuota, CPUSHARES
+  - MemoryAccounting, MemoryLimix
+  - TaskAccounting, TasksMax
+  - BlocIOAccounting, BlockIOWeight, BlockIODevicesWeight
+
+- Relevant Parameters in Cgour v2: 
+  - CPU Weight, 
+  - Memory Max
+  - IO* instead BlocIO
+
+# Managing the resource Allocation:
+
+- systemctl set-property --runtime httpd CPUShares=2048
