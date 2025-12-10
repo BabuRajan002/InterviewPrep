@@ -128,11 +128,23 @@
 # Managing resource allocation:
 
 - Systemd can be integrated with cgroups
-- Cgroups is offered by Linux kernal
+- Cgroups is offered by Linux kernal. They allow us to limit the available resources.
 - Crgoups can be used to limit resource availability to systemd services
+- Resources are assigned to slices, scopes and services.
+- slice is big environment, scope smaller to that.
+- Slices you can consider its a big environment
+- Slices are divided into three: 
+  1. system slice      
+      i. sshd services 
+      ii. httpd.service  etc..
+  2. Machine slice
+  3. user.slice
+     i. 1000(user) slice.      
+     ![manage resources](<Screenshot 2025-12-09 at 6.49.56 PM.png>)
+     ii. Under it we have different types of process which has a different CPU weights.
 - Relevant parameters in Cgroup v1:
   - CPU Accounting, CPUQuota, CPUSHARES
-  - MemoryAccounting, MemoryLimix
+  - MemoryAccounting, MemoryLimit
   - TaskAccounting, TasksMax
   - BlocIOAccounting, BlockIOWeight, BlockIODevicesWeight
 
@@ -141,6 +153,66 @@
   - Memory Max
   - IO* instead BlocIO
 
+- How to switch off the one of CPU to offline? 
+
+`echo 0 /sys/bus/cpu/devices/cpu1/online` - this will turn off one of the cpu cores.
+
 # Managing the resource Allocation:
 
 - systemctl set-property --runtime httpd CPUShares=2048
+
+## How do you allocate the resource to services using systemd? 
+
+`systemctl set-property --runtime httpd CPUShares=2048` ---> Non persistent. Temp file will be created in /run
+`systemctl set-property httpd CPUShares=2048` --> Set persistent under `/etc/systemd/system`
+
+## Creating Custom units: 
+
+- `type=simple` - Runs the process sepcified with `ExecStart`
+- `type=oneshot` - Like simple, but waits for the process to exit before starting anuything else
+
+## Creating a Custom Targets:
+
+- A target is just a group of units
+- If a target contains the `AllowIsolate=yes` option, it can be used to boot the system in a specific state
+
+## How a terget exactly knows which unit to start? 
+
+- That will be present inside the `/etc/systemd/system/my.target`
+
+## Running user process in systemd
+
+- Users can run units in systemd
+- The Unit files for user processes are in: 
+- User processes are started when the user logs in
+- To start a user process on system boot, the `loginctl linger` feature needs to be enabled for that user.
+- After enabling linger, the user can set a process to be started automatically
+
+# Real World Scenario : Booting without /etc/fstab
+
+- Mount can be taken care by systemd in this case fstab is not required.
+- under `/run/systemd/generator` - We have boot.mount and `-.mount` 
+- `boot.mount` - Will be used to mount under boot directory
+- `-.mount` - used to mount the root filesystem
+
+# Understanding Hardware Access
+
+- Kernal drivers are used to load drivers for devices
+- To access these drivers, a representation in user space is needed
+- This representation is made by device nodes in /dev
+
+
+![devices](<Screenshot 2025-12-10 at 6.35.00 PM.png>)
+
+![majorAndMinorDevices](<Screenshot 2025-12-10 at 6.36.28 PM.png>)
+
+## How devices are initialized? 
+
+- Statically - through Initramfs or initrd
+- Dynamically - systemd-udevd - Is plug and play manager and it is used when devices are plugged/removed
+- Manually - mknod - not commonly used anywhere. Used to recover the lost devices
+
+## systemd-udevd - Hardware handling in modern linux systems
+
+- It is considered the plug and play manager on Linux
+- When hardware events are detected, it processes rules to initialize devices

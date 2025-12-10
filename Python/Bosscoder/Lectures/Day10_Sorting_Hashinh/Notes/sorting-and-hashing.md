@@ -42,9 +42,10 @@
 - If no swap happends in Round 1 and in Round 2 we can simply ignore the swapping and breakout
 
 ## 12:46 Selection sort:
+- Just opposite to the bubble sort
 - Principle is find the minimum and place it at the begining
-- Round1 - Find the min and directly swap it with 0th index.
-- Round2 - Find [1,n-1] and swap with a[i]
+- Round1 - Find the min and `directly` swap it with 0th index. find [0,n-1] + swap with a[0]
+- Round2 - Find [1,n-1] and swap with a[1]
 ## 1:14 PM insertion sort
 - 
 

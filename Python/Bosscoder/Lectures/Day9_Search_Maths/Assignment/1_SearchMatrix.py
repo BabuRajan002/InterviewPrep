@@ -8,10 +8,13 @@ class SearchMatrix:
         target = self.target
 
         for element in arr:
-            if target in element:
-                return True
+            n = len(element)
+            if target >= element[0] and target <= element[n-1]:
+                for num in element:
+                    if num == target:
+                        return True
         return False
 
 if __name__ == "__main__":
-    sm = SearchMatrix([[1,3,5,7],[10,11,16,20],[23,30,34,60]], 13)
+    sm = SearchMatrix([[1,3,5,7],[10,11,16,20],[23,30,34,60]], 20)
     print(sm.solve())
