@@ -1,0 +1,1475 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Linux Architecture Guide</title>
+        <style>
+            @media print {
+                @page {
+                    size: A4;
+                    margin: 2cm;
+                }
+
+                h1, h2, h3, h4 {
+                    page-break-after: avoid;
+                }
+
+                pre, table, blockquote {
+                    page-break-inside: avoid;
+                }
+
+                h1 {
+                    page-break-before: always;
+                }
+
+                h1:first-of-type {
+                    page-break-before: avoid;
+                }
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #fff;
+            }
+
+            h1 {
+                color: #2c3e50;
+                border-bottom: 3px solid #3498db;
+                padding-bottom: 10px;
+                margin-top: 40px;
+                font-size: 2.2em;
+            }
+
+            h1:first-of-type {
+                margin-top: 0;
+            }
+
+            h2 {
+                color: #34495e;
+                border-bottom: 2px solid #95a5a6;
+                padding-bottom: 8px;
+                margin-top: 30px;
+                font-size: 1.8em;
+            }
+
+            h3 {
+                color: #2980b9;
+                margin-top: 25px;
+                font-size: 1.4em;
+            }
+
+            h4 {
+                color: #27ae60;
+                margin-top: 20px;
+                font-size: 1.2em;
+            }
+
+            code {
+                background-color: #f4f4f4;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+                padding: 2px 6px;
+                font-family: 'Monaco', 'Courier New', monospace;
+                font-size: 0.9em;
+                color: #c7254e;
+            }
+
+            pre {
+                background-color: #f8f8f8;
+                border: 1px solid #ddd;
+                border-left: 4px solid #3498db;
+                border-radius: 5px;
+                padding: 15px;
+                overflow-x: auto;
+                margin: 15px 0;
+            }
+
+            pre code {
+                background-color: transparent;
+                border: none;
+                padding: 0;
+                color: #333;
+                font-size: 0.85em;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 20px 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            th {
+                background-color: #3498db;
+                color: white;
+                padding: 12px;
+                text-align: left;
+                border: 1px solid #2980b9;
+                font-weight: 600;
+            }
+
+            td {
+                padding: 10px 12px;
+                border: 1px solid #ddd;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            tr:hover {
+                background-color: #f0f0f0;
+            }
+
+            ul, ol {
+                margin: 15px 0;
+                padding-left: 30px;
+            }
+
+            li {
+                margin: 8px 0;
+            }
+
+            blockquote {
+                border-left: 4px solid #3498db;
+                padding-left: 15px;
+                margin: 20px 0;
+                color: #555;
+                font-style: italic;
+                background-color: #f9f9f9;
+                padding: 10px 15px;
+            }
+
+            strong {
+                color: #2c3e50;
+                font-weight: 600;
+            }
+
+            em {
+                color: #555;
+            }
+
+            hr {
+                border: none;
+                border-top: 2px solid #ddd;
+                margin: 30px 0;
+            }
+
+            a {
+                color: #3498db;
+                text-decoration: none;
+                transition: color 0.2s;
+            }
+
+            a:hover {
+                color: #2980b9;
+                text-decoration: underline;
+            }
+
+            /* Print button styles */
+            .print-instructions {
+                background-color: #fffbcc;
+                border: 2px solid #f0e68c;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: center;
+            }
+
+            .print-button {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 10px;
+                transition: background-color 0.3s;
+            }
+
+            .print-button:hover {
+                background-color: #2980b9;
+            }
+
+            @media print {
+                .print-instructions, .print-button {
+                    display: none;
+                }
+            }
+
+            /* Syntax highlighting for bash commands */
+            pre code {
+                display: block;
+                white-space: pre;
+            }
+        </style>
+        <script>
+            function printToPDF() {
+                window.print();
+            }
+        </script>
+    </head>
+    <body>
+        <div class="print-instructions">
+            <h3 style="margin-top: 0; color: #d35400;">📄 Ready to Save as PDF</h3>
+            <p>Click the button below or use <strong>Cmd+P</strong> (Mac) / <strong>Ctrl+P</strong> (Windows) to open print dialog</p>
+            <p>Then select <strong>"Save as PDF"</strong> as the destination</p>
+            <button class="print-button" onclick="printToPDF()">🖨️ Save as PDF</button>
+        </div>
+
+        <h1 id="linux-architecture-comprehensive-guide">Linux Architecture - Comprehensive Guide</h1>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<ol>
+<li><a href="#linux-architecture-overview">Linux Architecture Overview</a></li>
+<li><a href="#kernel-space-vs-user-space">Kernel Space vs User Space</a></li>
+<li><a href="#root-user-and-uid-0">Root User and UID 0</a></li>
+<li><a href="#kernel-modules-and-device-files">Kernel Modules and Device Files</a></li>
+<li><a href="#gnu-c-library-glibc">GNU C Library (glibc)</a></li>
+<li><a href="#shell-and-file-descriptors">Shell and File Descriptors</a></li>
+<li><a href="#boot-process">Boot Process</a></li>
+<li><a href="#kernel-modules-management">Kernel Modules Management</a></li>
+<li><a href="#proc-filesystem">Proc Filesystem</a></li>
+<li><a href="#systemd">Systemd</a></li>
+<li><a href="#resource-management-with-cgroups">Resource Management with Cgroups</a></li>
+<li><a href="#hardware-access">Hardware Access</a></li>
+</ol>
+
+<hr />
+
+<h2 id="linux-architecture-overview">Linux Architecture Overview</h2>
+
+<p><strong>Architecture Flow:</strong></p>
+
+<pre><code>Kernel → Drivers (Modules) → Hardware
+</code></pre>
+
+<p>The Linux system is built on a layered architecture where:<br />
+- The <strong>kernel</strong> acts as the core of the operating system<br />
+- <strong>Drivers (modules)</strong> provide interfaces to hardware devices<br />
+- <strong>Hardware</strong> represents the physical components</p>
+
+<h3 id="key-benefits-of-this-architecture">Key Benefits of This Architecture:</h3>
+
+<ul>
+<li>Modularity and flexibility</li>
+<li>Hardware abstraction</li>
+<li>Portability across different platforms</li>
+<li>Security through privilege separation</li>
+</ul>
+
+<hr />
+
+<h2 id="kernel-space-vs-user-space">Kernel Space vs User Space</h2>
+
+<h3 id="kernel-space">Kernel Space</h3>
+
+<ul>
+<li><strong>Unrestricted environment</strong> with full system privileges</li>
+<li>The kernel requires complete access to hardware using drivers called <strong>modules</strong></li>
+<li>Direct memory access and hardware manipulation</li>
+<li>Critical for system stability and security</li>
+<li>Protected from user applications</li>
+</ul>
+
+<h3 id="user-space">User Space</h3>
+
+<ul>
+<li><strong>Restricted environment</strong> where applications run</li>
+<li>Limited access to hardware and system resources</li>
+<li>Applications must make system calls to access kernel services</li>
+<li>Provides isolation between processes for security</li>
+<li>Prevents user programs from crashing the entire system</li>
+</ul>
+
+<h3 id="why-this-separation-matters">Why This Separation Matters:</h3>
+
+<ul>
+<li><strong>Security</strong>: Prevents malicious or buggy applications from compromising the system</li>
+<li><strong>Stability</strong>: User program crashes don't bring down the kernel</li>
+<li><strong>Isolation</strong>: Each process runs in its own protected memory space</li>
+</ul>
+
+<hr />
+
+<h2 id="role-of-kernel">Role of Kernel</h2>
+
+<p>The kernel is the <strong>heart of the Operating System</strong> and performs critical functions:</p>
+
+<ol>
+<li><strong>Process Management</strong>: Creates, schedules, and terminates processes</li>
+<li><strong>Memory Management</strong>: Allocates and manages system memory</li>
+<li><strong>Device Management</strong>: Controls hardware through drivers</li>
+<li><strong>File System Management</strong>: Provides abstraction for storage devices</li>
+<li><strong>Network Stack</strong>: Handles network protocols and communication</li>
+<li><strong>Security</strong>: Enforces access controls and permissions</li>
+<li><strong>System Calls</strong>: Provides interface between user space and kernel space</li>
+</ol>
+
+<hr />
+
+<h2 id="root-user-and-uid-0">Root User and UID 0</h2>
+
+<h3 id="understanding-uid-0">Understanding UID 0</h3>
+
+<ul>
+<li><strong>UID 0</strong> has all system capabilities - the superuser</li>
+<li>Defined in <code>/etc/passwd</code>, UID 0 is assigned to the root user</li>
+<li>Even if <code>/etc/passwd</code> is removed, UID 0 still exists and retains all privileges</li>
+<li>This means <strong>root user is defined deep within the operating system kernel</strong>, not just in configuration files</li>
+</ul>
+
+<h3 id="important-security-notes">Important Security Notes:</h3>
+
+<ul>
+<li>Any account with UID 0 has root privileges, regardless of username</li>
+<li>Root access should be carefully controlled and monitored</li>
+<li>Use <code>sudo</code> instead of direct root login for better auditing</li>
+<li>Modern systems use capabilities to grant specific privileges without full root access</li>
+</ul>
+
+<h3 id="linux-capabilities">Linux Capabilities:</h3>
+
+<p>Linux capabilities divide root privileges into distinct units:<br />
+- <code>CAP_NET_ADMIN</code>: Network administration<br />
+- <code>CAP_SYS_TIME</code>: Modify system clock<br />
+- <code>CAP_CHOWN</code>: Change file ownership<br />
+- This allows programs to run with only necessary privileges</p>
+
+<hr />
+
+<h2 id="kernel-modules-and-device-files">Kernel Modules and Device Files</h2>
+
+<h3 id="understanding-device-nodes">Understanding Device Nodes</h3>
+
+<ul>
+<li>Device files in <code>/dev</code> represent hardware devices</li>
+<li>Character devices (e.g., <code>/dev/tty</code>, <code>/dev/null</code>) - data as stream of bytes</li>
+<li>Block devices (e.g., <code>/dev/sda</code>, <code>/dev/nvme0n1</code>) - data in blocks</li>
+<li>Device files have major and minor numbers identifying the driver and device instance</li>
+</ul>
+
+<h3 id="device-mapping">Device Mapping:</h3>
+
+<pre><code>Application → Device File (/dev/xxx) → Kernel Driver → Hardware
+</code></pre>
+
+<h3 id="types-of-devices">Types of Devices:</h3>
+
+<ol>
+<li><strong>Character Devices</strong>: Sequential access (keyboards, mice, serial ports)</li>
+<li><strong>Block Devices</strong>: Random access (hard drives, USB drives)</li>
+<li><strong>Network Devices</strong>: Special case, accessed through sockets (eth0, wlan0)</li>
+<li><strong>Pseudo Devices</strong>: Virtual devices like <code>/dev/null</code>, <code>/dev/zero</code>, <code>/dev/random</code></li>
+</ol>
+
+<hr />
+
+<h2 id="gnu-c-library-glibc">GNU C Library (glibc)</h2>
+
+<h3 id="what-is-glibc">What is glibc?</h3>
+
+<ul>
+<li>Core component in Linux required for applications to function</li>
+<li>Implements the <strong>C standard library</strong> with functions used by programs written in C</li>
+<li>Provides essential Linux facilities including:
+<ul>
+<li><code>open()</code> - Open files</li>
+<li><code>read()</code> and <code>write()</code> - I/O operations</li>
+<li><code>malloc()</code> and <code>free()</code> - Memory allocation</li>
+<li><code>printf()</code> - Formatted output</li>
+<li>Socket functions for networking</li>
+<li>Thread management (POSIX threads)</li>
+</ul></li>
+</ul>
+
+<h3 id="why-it-matters">Why It Matters:</h3>
+
+<ul>
+<li>Almost all Linux programs depend on glibc</li>
+<li>Provides consistent API across different Linux distributions</li>
+<li>Optimized for performance on various architectures</li>
+<li>Acts as the bridge between applications and kernel system calls</li>
+</ul>
+
+<h3 id="alternative-c-libraries">Alternative C Libraries:</h3>
+
+<ul>
+<li><strong>musl libc</strong>: Lightweight alternative for embedded systems</li>
+<li><strong>uClibc</strong>: Small C library for embedded Linux</li>
+<li><strong>Bionic</strong>: Used in Android</li>
+</ul>
+
+<hr />
+
+<h2 id="shell-and-file-descriptors">Shell and File Descriptors</h2>
+
+<h3 id="shell">Shell</h3>
+
+<p>The shell is a <strong>command-line interpreter</strong> that:<br />
+- Provides interface between user and kernel<br />
+- Executes commands and scripts<br />
+- Common shells: bash, zsh, sh, fish, dash<br />
+- Supports scripting, job control, and redirection</p>
+
+<h3 id="file-descriptors">File Descriptors</h3>
+
+<p>File descriptors are integer handles representing open files or I/O streams:</p>
+
+<table>
+<thead>
+<tr>
+  <th>FD Number</th>
+  <th>Standard Name</th>
+  <th>Purpose</th>
+  <th>Symbol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>0</td>
+  <td>stdin</td>
+  <td>Standard Input</td>
+  <td><code>&lt;</code></td>
+</tr>
+<tr>
+  <td>1</td>
+  <td>stdout</td>
+  <td>Standard Output</td>
+  <td><code>&gt;</code></td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>stderr</td>
+  <td>Standard Error</td>
+  <td><code>2&gt;</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="redirection-examples">Redirection Examples:</h3>
+
+<pre><code>command &gt; output.txt          # Redirect stdout to file
+command 2&gt; error.txt          # Redirect stderr to file
+command &amp;&gt; all.txt            # Redirect both stdout and stderr
+command &lt; input.txt           # Redirect file to stdin
+command 2&gt;&amp;1                  # Redirect stderr to stdout
+command | another_command     # Pipe stdout to another command
+</code></pre>
+
+<h3 id="advanced-usage">Advanced Usage:</h3>
+
+<ul>
+<li>File descriptors 3-9 (and beyond) can be used for custom I/O</li>
+<li><code>/dev/fd/</code> directory shows open file descriptors</li>
+<li><code>exec</code> can redirect FDs for entire script</li>
+</ul>
+
+<hr />
+
+<h2 id="boot-process">Boot Process</h2>
+
+<h3 id="grub2-the-boot-loader">GRUB2 - The Boot Loader</h3>
+
+<p><strong>GRUB2</strong> (Grand Unified Bootloader version 2) is the standard boot loader on Linux systems.</p>
+
+<h3 id="where-is-grub-stored">Where is GRUB Stored?</h3>
+
+<p><strong>On BIOS Systems:</strong><br />
+- First <strong>512 bytes</strong> on disk form the Master Boot Record (MBR)<br />
+- <strong>446 bytes</strong> contain GRUB boot code<br />
+- <strong>64 bytes</strong> store the partition table<br />
+- <strong>2 bytes</strong> for boot signature (0x55AA)</p>
+
+<p><strong>On UEFI Systems:</strong><br />
+- GRUB is stored as an EFI application in the EFI System Partition (ESP)<br />
+- Usually located at <code>/boot/efi/EFI/[distro]/grubx64.efi</code><br />
+- No MBR limitations; can use GPT partitioning</p>
+
+<h3 id="boot-sequence">Boot Sequence:</h3>
+
+<ol>
+<li><strong>BIOS/UEFI</strong> initializes hardware</li>
+<li><strong>GRUB</strong> loads and presents boot menu</li>
+<li><strong>Kernel</strong> is loaded into memory</li>
+<li><strong>initramfs/initrd</strong> provides initial root filesystem</li>
+<li><strong>systemd</strong> (or init) starts as PID 1</li>
+<li><strong>System services</strong> are initialized</li>
+<li><strong>Login prompt</strong> appears</li>
+</ol>
+
+<h3 id="grub-configuration">GRUB Configuration:</h3>
+
+<ul>
+<li>Main config: <code>/boot/grub2/grub.cfg</code> (auto-generated)</li>
+<li>User settings: <code>/etc/default/grub</code></li>
+<li>Custom entries: <code>/etc/grub.d/</code></li>
+<li>Regenerate with: <code>grub2-mkconfig -o /boot/grub2/grub.cfg</code></li>
+</ul>
+
+<hr />
+
+<h2 id="why-kernels-dont-need-recompilation-anymore">Why Kernels Don't Need Recompilation Anymore</h2>
+
+<h3 id="monolithic-vs-modular-kernels">Monolithic vs Modular Kernels</h3>
+
+<p><strong>Earlier: Monolithic Kernel</strong><br />
+- All drivers compiled directly into the kernel<br />
+- Adding hardware support required kernel recompilation<br />
+- Large kernel size<br />
+- Inflexible and time-consuming</p>
+
+<p><strong>Modern: Modular Kernel</strong><br />
+- Kernel modules can be loaded/unloaded dynamically<br />
+- Add driver support without recompiling the kernel<br />
+- Smaller core kernel size<br />
+- Flexible and efficient</p>
+
+<h3 id="benefits-of-modular-approach">Benefits of Modular Approach:</h3>
+
+<ul>
+<li><strong>Dynamic Loading</strong>: Load modules only when needed</li>
+<li><strong>Reduced Memory Usage</strong>: Only active modules consume memory</li>
+<li><strong>Easier Updates</strong>: Update individual modules without kernel rebuild</li>
+<li><strong>Hardware Flexibility</strong>: Support new hardware by adding modules</li>
+<li><strong>Faster Boot</strong>: Load only essential modules initially</li>
+</ul>
+
+<hr />
+
+<h2 id="kernel-modules-management">Kernel Modules Management</h2>
+
+<h3 id="loading-modules">Loading Modules</h3>
+
+<p><strong>Automatic Loading Methods:</strong><br />
+1. <strong>initramfs/initrd</strong>: RAM filesystem containing essential modules loaded at boot<br />
+   - Created during system installation<br />
+   - Rebuilt when kernel is updated</p>
+
+<ol start="2">
+<li><p><strong>systemd-udevd</strong>: Dynamic hardware detection</p>
+
+<ul>
+<li>Reacts to hardware events (hotplug)</li>
+<li>Works with kernel to load appropriate drivers</li>
+<li>Handles USB devices, network cards, etc.</li>
+</ul></li>
+<li><p><strong>Manual Loading</strong>: Using <code>modprobe</code> command</p></li>
+</ol>
+
+<h3 id="essential-commands">Essential Commands:</h3>
+
+<pre><code># List PCI devices and their kernel modules
+lspci -k
+
+# Show module information
+modinfo e1000e
+
+# List loaded modules
+lsmod
+
+# Check if specific module is loaded
+lsmod | grep e1000e
+# Output: e1000e    307200  0
+# The "0" indicates no dependencies, safe to remove
+
+# Remove a module
+modprobe -r e1000e
+
+# Load a module with parameters
+modprobe e1000e debug=4
+
+# Show module dependencies
+modprobe --show-depends e1000e
+
+# List all available modules
+find /lib/modules/$(uname -r) -name "*.ko*"
+</code></pre>
+
+<h3 id="module-configuration">Module Configuration:</h3>
+
+<ul>
+<li>Module parameters: <code>/etc/modprobe.d/</code></li>
+<li>Blacklist modules: <code>/etc/modprobe.d/blacklist.conf</code></li>
+<li>Auto-load modules: <code>/etc/modules-load.d/</code></li>
+</ul>
+
+<h3 id="kernel-module-locations">Kernel Module Locations:</h3>
+
+<ul>
+<li><code>/lib/modules/$(uname -r)/</code>: Module files</li>
+<li><code>/sys/module/</code>: Runtime module information</li>
+<li><code>/proc/modules</code>: Currently loaded modules</li>
+</ul>
+
+<hr />
+
+<h2 id="proc-filesystem">Proc Filesystem</h2>
+
+<h3 id="what-is-proc">What is <code>/proc</code>?</h3>
+
+<p>The <code>/proc</code> filesystem is a <strong>pseudo filesystem</strong> that provides an interface to kernel data structures:<br />
+- Not a real filesystem on disk<br />
+- Dynamically generated by the kernel<br />
+- Provides direct access to kernel information<br />
+- Read and sometimes write access to kernel parameters</p>
+
+<h3 id="other-kernel-filesystems">Other Kernel Filesystems:</h3>
+
+<ul>
+<li><strong>sysfs</strong> (<code>/sys</code>): Device and driver information</li>
+<li><strong>debugfs</strong> (<code>/sys/kernel/debug</code>): Kernel debugging information</li>
+<li><strong>configfs</strong>: Kernel object configuration</li>
+</ul>
+
+<h3 id="three-main-areas-in-proc">Three Main Areas in <code>/proc</code>:</h3>
+
+<h4 id="1-procpid-process-information">1. <code>/proc/[PID]</code> - Process Information</h4>
+
+<p>Each running process has a directory with its PID containing:</p>
+
+<pre><code>/proc/1234/cmdline     # Command line that started the process
+/proc/1234/status      # Process status information
+/proc/1234/fd/         # File descriptors opened by process
+/proc/1234/maps        # Memory mapping
+/proc/1234/environ     # Environment variables
+/proc/1234/cwd         # Current working directory (symlink)
+/proc/1234/exe         # Executable file (symlink)
+</code></pre>
+
+<h4 id="2-procsys-kernel-tunable-parameters">2. <code>/proc/sys</code> - Kernel Tunable Parameters</h4>
+
+<p>Allows reading and modifying kernel parameters:</p>
+
+<pre><code>/proc/sys/net/         # Network parameters
+/proc/sys/kernel/      # Kernel parameters
+/proc/sys/vm/          # Virtual memory parameters
+/proc/sys/fs/          # Filesystem parameters
+</code></pre>
+
+<p><strong>Examples:</strong></p>
+
+<pre><code># View parameter
+cat /proc/sys/net/ipv4/ip_forward
+
+# Modify parameter (temporary)
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+# Permanent changes via sysctl
+echo "net.ipv4.ip_forward = 1" &gt;&gt; /etc/sysctl.conf
+sysctl -p
+</code></pre>
+
+<h4 id="3-proc-system-status-information">3. <code>/proc/*</code> - System Status Information</h4>
+
+<p>Various files containing system information:</p>
+
+<pre><code>/proc/cpuinfo          # CPU information
+/proc/meminfo          # Memory information
+/proc/version          # Kernel version
+/proc/uptime           # System uptime
+/proc/loadavg          # Load average
+/proc/mounts           # Mounted filesystems
+/proc/partitions       # Partition information
+/proc/swaps            # Swap space usage
+</code></pre>
+
+<h3 id="procsysrq-trigger-testing-critical-kernel-features"><code>/proc/sysrq-trigger</code> - Testing Critical Kernel Features</h3>
+
+<p><strong>SysRq</strong> provides an interface for advanced kernel operations:</p>
+
+<pre><code># Crash the system (for testing crash dumps)
+echo c &gt; /proc/sysrq-trigger
+
+# Trigger Out-Of-Memory killer
+echo f &gt; /proc/sysrq-trigger
+
+# Kill all processes (except init)
+echo i &gt; /proc/sysrq-trigger
+
+# Immediate system reboot
+echo b &gt; /proc/sysrq-trigger
+
+# Sync all filesystems
+echo s &gt; /proc/sysrq-trigger
+
+# Remount filesystems read-only
+echo u &gt; /proc/sysrq-trigger
+</code></pre>
+
+<p><strong>WARNING</strong>: These commands are dangerous! Use only for testing in controlled environments.</p>
+
+<h3 id="enabling-sysrq">Enabling SysRq:</h3>
+
+<pre><code># Enable all SysRq functions
+echo 1 &gt; /proc/sys/kernel/sysrq
+
+# Or use specific bitmask for selective features
+</code></pre>
+
+<hr />
+
+<h2 id="using-watchdogs">Using Watchdogs</h2>
+
+<h3 id="what-are-watchdogs">What Are Watchdogs?</h3>
+
+<p>Hardware or software timers that <strong>automatically reset the system</strong> if serious problems occur.</p>
+
+<h3 id="how-watchdogs-work">How Watchdogs Work:</h3>
+
+<ol>
+<li>Watchdog service writes to <code>/dev/watchdog</code> periodically (default: every minute)</li>
+<li>If writes stop, the system is considered frozen</li>
+<li>Watchdog hardware/software triggers system reset</li>
+<li>Prevents indefinite system hangs</li>
+</ol>
+
+<h3 id="configuration">Configuration:</h3>
+
+<pre><code># Enable and start watchdog service
+systemctl enable --now watchdog
+
+# Configuration file
+/etc/watchdog.conf
+</code></pre>
+
+<p><strong>Common Configuration Options:</strong></p>
+
+<pre><code>watchdog-device = /dev/watchdog
+watchdog-timeout = 60
+interval = 10
+max-load-1 = 24
+</code></pre>
+
+<h3 id="use-cases">Use Cases:</h3>
+
+<ul>
+<li>Mission-critical servers</li>
+<li>Embedded systems</li>
+<li>Remote systems without physical access</li>
+<li>High-availability environments</li>
+</ul>
+
+<hr />
+
+<h2 id="ebpf-extended-berkeley-packet-filter">eBPF (Extended Berkeley Packet Filter)</h2>
+
+<h3 id="what-is-ebpf">What is eBPF?</h3>
+
+<p><strong>eBPF</strong> is revolutionary technology that allows you to:<br />
+- Change kernel behavior <strong>without</strong> modifying kernel source<br />
+- Run sandboxed programs in the kernel<br />
+- No need to add or change kernel modules<br />
+- Safe and efficient kernel extensibility</p>
+
+<h3 id="key-features">Key Features:</h3>
+
+<ol>
+<li><strong>Safety</strong>: Programs are verified before execution</li>
+<li><strong>Performance</strong>: Runs in kernel space, no context switching</li>
+<li><strong>Flexibility</strong>: Can hook into various kernel subsystems</li>
+<li><strong>Dynamic</strong>: Load and unload programs at runtime</li>
+</ol>
+
+<h3 id="common-use-cases">Common Use Cases:</h3>
+
+<ul>
+<li><strong>Networking</strong>: High-performance packet filtering and routing</li>
+<li><strong>Observability</strong>: System and application monitoring</li>
+<li><strong>Security</strong>: Runtime security enforcement</li>
+<li><strong>Tracing</strong>: Performance analysis and debugging</li>
+</ul>
+
+<h3 id="popular-ebpf-tools">Popular eBPF Tools:</h3>
+
+<ul>
+<li><strong>bpftrace</strong>: High-level tracing language</li>
+<li><strong>BCC (BPF Compiler Collection)</strong>: eBPF program development tools</li>
+<li><strong>Cilium</strong>: Kubernetes networking and security</li>
+<li><strong>Falco</strong>: Runtime security monitoring</li>
+</ul>
+
+<h3 id="example-use-cases">Example Use Cases:</h3>
+
+<pre><code># Trace system calls
+bpftrace -e 'tracepoint:syscalls:sys_enter_* { @[probe] = count(); }'
+
+# Monitor network connections
+bpftrace -e 'tracepoint:sock:inet_sock_set_state { @[args-&gt;newstate] = count(); }'
+</code></pre>
+
+<hr />
+
+<h2 id="systemd">Systemd</h2>
+
+<h3 id="system-initialization">System Initialization</h3>
+
+<p><strong>Systemd</strong> is the modern init system and service manager for Linux:<br />
+- Automatically boots when the system starts (PID 1)<br />
+- Manages system services, devices, and mounts<br />
+- Parallel service startup for faster boot times<br />
+- On-demand starting of services</p>
+
+<h3 id="troubleshooting-modes">Troubleshooting Modes:</h3>
+
+<p><strong>Without Systemd:</strong><br />
+- Boot with <code>rd.break</code>: Loads minimal <strong>initramfs</strong> init process, no systemd<br />
+- Boot with <code>init=/bin/bash</code>: Loads bash directly as init process</p>
+
+<h3 id="systemd-architecture">Systemd Architecture:</h3>
+
+<p><strong>Unit Types:</strong><br />
+- <code>.service</code>: System services<br />
+- <code>.socket</code>: IPC/network sockets<br />
+- <code>.target</code>: Group of units<br />
+- <code>.mount</code>: Filesystem mount points<br />
+- <code>.timer</code>: Scheduled tasks<br />
+- <code>.path</code>: Path-based activation<br />
+- <code>.device</code>: Device units</p>
+
+<h3 id="unit-file-locations-priority-order">Unit File Locations (Priority Order):</h3>
+
+<ol>
+<li><p><strong><code>/etc/systemd/system/</code></strong></p>
+
+<ul>
+<li>Administrator customizations</li>
+<li><strong>Highest priority</strong></li>
+<li>Changes persist across updates</li>
+</ul></li>
+<li><p><strong><code>/run/systemd/system/</code></strong></p>
+
+<ul>
+<li>Runtime units</li>
+<li><strong>Non-persistent</strong> (lost on reboot)</li>
+</ul></li>
+<li><p><strong><code>/usr/lib/systemd/system/</code></strong></p>
+
+<ul>
+<li>Package-provided units</li>
+<li><strong>Lowest priority</strong></li>
+<li>Overridden by admin configs</li>
+</ul></li>
+</ol>
+
+<h3 id="common-systemd-commands">Common Systemd Commands:</h3>
+
+<pre><code># Service management
+systemctl start service_name
+systemctl stop service_name
+systemctl restart service_name
+systemctl status service_name
+systemctl enable service_name      # Auto-start at boot
+systemctl disable service_name
+
+# System state
+systemctl list-units
+systemctl list-unit-files
+systemctl list-dependencies
+systemctl get-default              # Default target
+systemctl set-default multi-user.target
+
+# Logs
+journalctl -u service_name
+journalctl -f                      # Follow logs
+journalctl -b                      # Current boot
+journalctl --since "1 hour ago"
+</code></pre>
+
+<hr />
+
+<h2 id="resource-management-with-cgroups">Resource Management with Cgroups</h2>
+
+<h3 id="what-are-cgroups">What are Cgroups?</h3>
+
+<p><strong>Control Groups (cgroups)</strong> are a Linux kernel feature that:<br />
+- Limit and isolate resource usage<br />
+- Track resource consumption<br />
+- Prioritize resource allocation<br />
+- Control process groups</p>
+
+<h3 id="systemd-integration">Systemd Integration</h3>
+
+<p>Systemd integrates with cgroups to manage system resources:<br />
+- Resources assigned to <strong>slices</strong>, <strong>scopes</strong>, and <strong>services</strong><br />
+- Hierarchical organization<br />
+- Both cgroup v1 and v2 support</p>
+
+<h3 id="cgroup-hierarchy">Cgroup Hierarchy:</h3>
+
+<pre><code>Root
+├── system.slice
+│   ├── sshd.service
+│   ├── httpd.service
+│   └── nginx.service
+├── user.slice
+│   ├── user-1000.slice
+│   │   ├── session-1.scope
+│   │   └── user@1000.service
+│   └── user-1001.slice
+└── machine.slice
+    ├── vm1.service
+    └── container1.service
+</code></pre>
+
+<h3 id="understanding-slices">Understanding Slices:</h3>
+
+<ol>
+<li><p><strong>system.slice</strong></p>
+
+<ul>
+<li>System services</li>
+<li>Daemons and background services</li>
+</ul></li>
+<li><p><strong>user.slice</strong></p>
+
+<ul>
+<li>User sessions</li>
+<li>User services</li>
+<li>Per-user resource limits</li>
+</ul></li>
+<li><p><strong>machine.slice</strong></p>
+
+<ul>
+<li>Virtual machines</li>
+<li>Containers</li>
+</ul></li>
+</ol>
+
+<h3 id="cgroup-v1-parameters">Cgroup v1 Parameters:</h3>
+
+<pre><code>CPUAccounting=yes
+CPUQuota=50%
+CPUShares=1024
+MemoryAccounting=yes
+MemoryLimit=1G
+TasksAccounting=yes
+TasksMax=100
+BlockIOAccounting=yes
+BlockIOWeight=500
+</code></pre>
+
+<h3 id="cgroup-v2-parameters">Cgroup v2 Parameters:</h3>
+
+<pre><code>CPUWeight=100               # Range: 1-10000
+MemoryMax=1G
+MemoryHigh=800M
+IOWeight=100                # Replaces BlockIO
+</code></pre>
+
+<h3 id="setting-resource-limits">Setting Resource Limits:</h3>
+
+<pre><code># Non-persistent (runtime only)
+systemctl set-property --runtime httpd.service CPUShares=2048
+
+# Persistent (survives reboot)
+systemctl set-property httpd.service CPUShares=2048
+
+# View current settings
+systemctl show httpd.service -p CPUShares
+
+# Slice-wide limits
+systemctl set-property user.slice MemoryMax=4G
+</code></pre>
+
+<h3 id="cpu-hotplugging">CPU Hotplugging:</h3>
+
+<pre><code># Take CPU offline
+echo 0 &gt; /sys/devices/system/cpu/cpu1/online
+
+# Bring CPU online
+echo 1 &gt; /sys/devices/system/cpu/cpu1/online
+
+# Check CPU status
+cat /sys/devices/system/cpu/cpu*/online
+</code></pre>
+
+<h3 id="monitoring-resource-usage">Monitoring Resource Usage:</h3>
+
+<pre><code># Show cgroup tree
+systemd-cgls
+
+# Show resource usage
+systemd-cgtop
+
+# Detailed service resource usage
+systemctl status httpd.service
+</code></pre>
+
+<hr />
+
+<h2 id="creating-custom-units">Creating Custom Units</h2>
+
+<h3 id="unit-types">Unit Types:</h3>
+
+<p><strong><code>Type=simple</code></strong><br />
+- Runs the process specified with <code>ExecStart</code><br />
+- Default type if not specified<br />
+- systemd considers it started immediately</p>
+
+<p><strong><code>Type=oneshot</code></strong><br />
+- Similar to simple<br />
+- Waits for process to exit before starting other units<br />
+- Useful for initialization scripts</p>
+
+<p><strong><code>Type=forking</code></strong><br />
+- For daemons that fork into background<br />
+- systemd waits for parent process to exit</p>
+
+<p><strong><code>Type=notify</code></strong><br />
+- Service notifies systemd when ready<br />
+- Uses <code>sd_notify()</code> function</p>
+
+<h3 id="example-custom-service">Example Custom Service:</h3>
+
+<pre><code>[Unit]
+Description=My Custom Application
+After=network.target
+
+[Service]
+Type=simple
+User=appuser
+WorkingDirectory=/opt/myapp
+ExecStart=/opt/myapp/bin/myapp
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<h3 id="creating-custom-targets">Creating Custom Targets:</h3>
+
+<p>A <strong>target</strong> is a group of units that defines a system state:</p>
+
+<pre><code>[Unit]
+Description=My Custom Target
+Requires=basic.target
+Conflicts=rescue.service rescue.target
+AllowIsolate=yes
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<p><strong>Note</strong>: <code>AllowIsolate=yes</code> allows booting directly into this target with <code>systemctl isolate my.target</code></p>
+
+<h3 id="how-targets-know-which-units-to-start">How Targets Know Which Units to Start:</h3>
+
+<p>Dependencies defined through:<br />
+- <code>Requires=</code>: Strict dependency<br />
+- <code>Wants=</code>: Weak dependency<br />
+- <code>WantedBy=</code>: Reverse dependency (in [Install] section)</p>
+
+<p>Configuration in <code>/etc/systemd/system/my.target.wants/</code> contains symlinks to required units.</p>
+
+<hr />
+
+<h2 id="running-user-processes-in-systemd">Running User Processes in Systemd</h2>
+
+<h3 id="user-units">User Units</h3>
+
+<p>Users can manage their own systemd units:</p>
+
+<p><strong>Unit File Locations for User:</strong><br />
+- <code>~/.config/systemd/user/</code>: User-specific units<br />
+- <code>/etc/systemd/user/</code>: System-wide user units<br />
+- <code>/usr/lib/systemd/user/</code>: Package-provided user units</p>
+
+<h3 id="user-service-management">User Service Management:</h3>
+
+<pre><code># User commands (--user flag)
+systemctl --user start myservice
+systemctl --user enable myservice
+systemctl --user status myservice
+
+# View user unit files
+systemctl --user list-unit-files
+</code></pre>
+
+<h3 id="loginctl-linger">Loginctl Linger</h3>
+
+<p><strong>Problem</strong>: User services stop when user logs out</p>
+
+<p><strong>Solution</strong>: Enable <strong>linger</strong> for persistent user services</p>
+
+<pre><code># Enable linger for current user
+loginctl enable-linger
+
+# Enable linger for specific user
+loginctl enable-linger username
+
+# Check linger status
+loginctl show-user username
+
+# Disable linger
+loginctl disable-linger username
+</code></pre>
+
+<p>After enabling linger:<br />
+- User services start at system boot<br />
+- Services continue running after logout<br />
+- Useful for user-level daemons and cron jobs</p>
+
+<h3 id="example-user-service">Example User Service:</h3>
+
+<pre><code># ~/.config/systemd/user/myapp.service
+[Unit]
+Description=My User Application
+
+[Service]
+Type=simple
+ExecStart=/home/user/bin/myapp
+
+[Install]
+WantedBy=default.target
+</code></pre>
+
+<hr />
+
+<h2 id="real-world-scenario-booting-without-etcfstab">Real World Scenario: Booting Without <code>/etc/fstab</code></h2>
+
+<h3 id="systemd-mount-management">Systemd Mount Management</h3>
+
+<p>Modern systems can boot without <code>/etc/fstab</code> because systemd handles mounts:</p>
+
+<h3 id="generated-mount-units">Generated Mount Units:</h3>
+
+<p>Located in <strong><code>/run/systemd/generator/</code></strong>:</p>
+
+<ol>
+<li><p><strong><code>-.mount</code></strong></p>
+
+<ul>
+<li>Mounts the root filesystem</li>
+<li>Generated from kernel command line</li>
+</ul></li>
+<li><p><strong><code>boot.mount</code></strong></p>
+
+<ul>
+<li>Mounts <code>/boot</code> partition</li>
+<li>Generated from various sources</li>
+</ul></li>
+</ol>
+
+<h3 id="how-it-works">How It Works:</h3>
+
+<ol>
+<li><strong>systemd-fstab-generator</strong> reads <code>/etc/fstab</code></li>
+<li>Generates <code>.mount</code> units dynamically</li>
+<li>Units placed in <code>/run/systemd/generator/</code></li>
+<li>systemd mounts filesystems using these units</li>
+</ol>
+
+<h3 id="viewing-mount-units">Viewing Mount Units:</h3>
+
+<pre><code># List all mount units
+systemctl list-units -t mount
+
+# Status of specific mount
+systemctl status boot.mount
+
+# View generated units
+ls -l /run/systemd/generator/
+</code></pre>
+
+<h3 id="benefits">Benefits:</h3>
+
+<ul>
+<li>Better error handling</li>
+<li>Parallel mounting</li>
+<li>Integration with systemd dependency system</li>
+<li>Can still use <code>/etc/fstab</code> for compatibility</li>
+</ul>
+
+<hr />
+
+<h2 id="understanding-hardware-access">Understanding Hardware Access</h2>
+
+<h3 id="device-representation">Device Representation</h3>
+
+<p><strong>Kernel drivers</strong> load drivers for hardware devices, but user space needs access:<br />
+- Device nodes in <code>/dev/</code> represent hardware<br />
+- Provide interface between user applications and kernel drivers</p>
+
+<h3 id="device-types">Device Types:</h3>
+
+<pre><code>brw-rw---- 1 root disk 8, 0 Dec 10 18:00 /dev/sda    # Block device
+crw-rw-rw- 1 root tty  5, 0 Dec 10 18:00 /dev/tty    # Character device
+</code></pre>
+
+<p><strong>Format</strong>: <code>[type][permissions] [owner] [group] [major],[minor] [date] [name]</code></p>
+
+<ul>
+<li><strong>Type</strong>: <code>b</code> (block), <code>c</code> (character)</li>
+<li><strong>Major number</strong>: Identifies the driver</li>
+<li><strong>Minor number</strong>: Identifies the specific device instance</li>
+</ul>
+
+<h3 id="major-and-minor-numbers">Major and Minor Numbers:</h3>
+
+<pre><code># View device numbers
+ls -l /dev/sda*
+brw-rw---- 1 root disk 8, 0 Dec 10 /dev/sda
+brw-rw---- 1 root disk 8, 1 Dec 10 /dev/sda1
+brw-rw---- 1 root disk 8, 2 Dec 10 /dev/sda2
+
+# Major 8 = SCSI disk driver
+# Minor 0 = First disk (sda)
+# Minor 1 = First partition (sda1)
+# Minor 2 = Second partition (sda2)
+</code></pre>
+
+<h3 id="device-initialization-methods">Device Initialization Methods:</h3>
+
+<h4 id="1-static-through-initramfsinitrd">1. <strong>Static - Through initramfs/initrd</strong></h4>
+
+<ul>
+<li>Essential devices loaded at boot</li>
+<li>Compiled into initial RAM filesystem</li>
+<li>Contains critical drivers for boot process</li>
+</ul>
+
+<h4 id="2-dynamic-systemd-udevd">2. <strong>Dynamic - systemd-udevd</strong></h4>
+
+<ul>
+<li>Modern <strong>plug-and-play</strong> manager</li>
+<li>Reacts to hardware events (hotplug)</li>
+<li>Automatically loads drivers when devices are plugged in/removed</li>
+<li>Creates device nodes dynamically</li>
+</ul>
+
+<h4 id="3-manual-mknod">3. <strong>Manual - mknod</strong></h4>
+
+<ul>
+<li>Rarely used in modern systems</li>
+<li>Useful for recovery scenarios</li>
+<li>Create device nodes manually</li>
+</ul>
+
+<pre><code># Create device node manually
+mknod /dev/mydevice c 250 0
+
+# Create block device
+mknod /dev/myblock b 8 16
+</code></pre>
+
+<hr />
+
+<h2 id="systemd-udevd-modern-hardware-handling">systemd-udevd - Modern Hardware Handling</h2>
+
+<h3 id="what-is-udev">What is udev?</h3>
+
+<p><strong>systemd-udevd</strong> is the <strong>device manager</strong> for Linux:<br />
+- Dynamically manages device nodes in <code>/dev/</code><br />
+- Listens for kernel hardware events (uevents)<br />
+- Processes rules to configure devices<br />
+- Sets permissions and ownership<br />
+- Creates symbolic links<br />
+- Runs programs in response to events</p>
+
+<h3 id="udev-rules">udev Rules:</h3>
+
+<p>Located in:<br />
+- <code>/usr/lib/udev/rules.d/</code>: System default rules<br />
+- <code>/etc/udev/rules.d/</code>: Administrator custom rules</p>
+
+<p><strong>Rule Format:</strong></p>
+
+<pre><code># /etc/udev/rules.d/99-custom.rules
+KERNEL=="sd*", ATTRS{vendor}=="Samsung", SYMLINK+="samsung_disk"
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:11:22:33:44:55", NAME="eth-external"
+</code></pre>
+
+<h3 id="common-udev-commands">Common udev Commands:</h3>
+
+<pre><code># Reload udev rules
+udevadm control --reload-rules
+
+# Trigger events
+udevadm trigger
+
+# Monitor udev events in real-time
+udevadm monitor
+
+# Query device information
+udevadm info /dev/sda
+
+# Test rule matching
+udevadm test /sys/class/net/eth0
+</code></pre>
+
+<h3 id="udev-workflow">udev Workflow:</h3>
+
+<ol>
+<li><strong>Hardware event</strong> occurs (device plugged in)</li>
+<li><strong>Kernel</strong> generates uevent</li>
+<li><strong>systemd-udevd</strong> receives uevent</li>
+<li><strong>Rules</strong> are processed in order</li>
+<li><strong>Device node</strong> is created in <code>/dev/</code></li>
+<li><strong>Permissions</strong> and ownership set</li>
+<li><strong>Programs</strong> executed if specified in rules</li>
+</ol>
+
+<h3 id="persistent-device-naming">Persistent Device Naming:</h3>
+
+<p>udev creates persistent names in <code>/dev/disk/</code>:</p>
+
+<pre><code>/dev/disk/by-uuid/       # Filesystem UUID
+/dev/disk/by-label/      # Filesystem label
+/dev/disk/by-id/         # Hardware ID
+/dev/disk/by-path/       # Physical path
+/dev/disk/by-partlabel/  # Partition label
+</code></pre>
+
+<p><strong>Benefits:</strong><br />
+- Device names remain consistent across reboots<br />
+- Independent of device detection order<br />
+- Reliable for <code>/etc/fstab</code> entries</p>
+
+<hr />
+
+<h2 id="additional-topics-and-best-practices">Additional Topics and Best Practices</h2>
+
+<h3 id="system-performance-monitoring">System Performance Monitoring</h3>
+
+<pre><code># CPU usage
+top
+htop
+mpstat
+
+# Memory usage
+free -h
+vmstat
+cat /proc/meminfo
+
+# Disk I/O
+iostat
+iotop
+
+# Network
+iftop
+nethogs
+ss -tuln
+
+# Overall system monitoring
+dstat
+glances
+</code></pre>
+
+<h3 id="kernel-parameters-sysctl">Kernel Parameters (sysctl)</h3>
+
+<pre><code># View all parameters
+sysctl -a
+
+# View specific parameter
+sysctl net.ipv4.ip_forward
+
+# Set parameter temporarily
+sysctl -w net.ipv4.ip_forward=1
+
+# Make permanent
+echo "net.ipv4.ip_forward = 1" &gt;&gt; /etc/sysctl.conf
+sysctl -p
+</code></pre>
+
+<h3 id="important-directories-summary">Important Directories Summary:</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Directory</th>
+  <th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>/boot</code></td>
+  <td>Kernel, initramfs, bootloader files</td>
+</tr>
+<tr>
+  <td><code>/dev</code></td>
+  <td>Device nodes</td>
+</tr>
+<tr>
+  <td><code>/etc</code></td>
+  <td>System configuration</td>
+</tr>
+<tr>
+  <td><code>/proc</code></td>
+  <td>Process and kernel information</td>
+</tr>
+<tr>
+  <td><code>/sys</code></td>
+  <td>Device and driver information</td>
+</tr>
+<tr>
+  <td><code>/lib/modules</code></td>
+  <td>Kernel modules</td>
+</tr>
+<tr>
+  <td><code>/run</code></td>
+  <td>Runtime data</td>
+</tr>
+<tr>
+  <td><code>/var/log</code></td>
+  <td>System logs</td>
+</tr>
+</tbody>
+</table>
+
+<hr />
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This comprehensive guide covers the essential aspects of Linux architecture:<br />
+- Understanding kernel space vs user space separation<br />
+- Managing kernel modules dynamically<br />
+- Working with systemd for service and resource management<br />
+- Using cgroups for resource control<br />
+- Managing hardware through udev<br />
+- Utilizing pseudo filesystems for kernel interaction</p>
+
+<p><strong>Key Takeaways:</strong><br />
+1. Linux architecture is modular and flexible<br />
+2. Systemd provides modern service and resource management<br />
+3. Kernel modules enable hardware support without recompilation<br />
+4. Cgroups allow fine-grained resource control<br />
+5. Understanding these fundamentals is crucial for system administration and troubleshooting</p>
+
+<hr />
+
+<h2 id="references-and-further-reading">References and Further Reading</h2>
+
+<ul>
+<li><strong>Linux Kernel Documentation</strong>: https://www.kernel.org/doc/</li>
+<li><strong>systemd Documentation</strong>: https://systemd.io/</li>
+<li><strong>Red Hat System Administration Guides</strong></li>
+<li><strong>The Linux Programming Interface</strong> by Michael Kerrisk</li>
+<li><strong>Linux Kernel Development</strong> by Robert Love</li>
+<li><strong>man pages</strong>: Essential reference for all commands</li>
+</ul>
+
+<hr />
+
+<p><strong>Document Version</strong>: 2.0<br />
+<strong>Last Updated</strong>: December 12, 2025<br />
+<strong>Author</strong>: Linux System Administration Notes</p>
+
+
+        <hr>
+        <footer style="text-align: center; color: #7f8c8d; margin-top: 40px; padding: 20px;">
+            <p><em>Linux Architecture - Comprehensive Guide</em></p>
+            <p>Document Version 2.0 | Last Updated: December 12, 2025</p>
+        </footer>
+    </body>
+    </html>
+    
