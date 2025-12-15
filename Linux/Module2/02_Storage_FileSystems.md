@@ -17,7 +17,59 @@
 - GUID is a part of Unified Extensible Firmware Interface
 ![MBR](<Screenshot 2025-12-12 at 2.53.27 PM.png>)
 
-## Managing Partitions
+## Image and ISO file:
 
-- 
+- To mount a file, a loop device is created as a fake block device
+- You can perform this procedure manually as well. 
 
+## LVM:
+
+- Easy resizing of volume
+- `vgcreate` will create will check the physical volume first and it will add it into the vg.
+
+## LVM Features:
+
+- How to create lv snapshot - `lvcreate -s -n lvdatasnap /dev/vgdata/lvdata -l 5%FREE`
+- Volume group configuration - `vgcfgbackup`
+- `vgcfgrestore` - to revert to the original data
+- `vgcfgbackup -f /tmp/vgbackup-$(data +%d-%m-%y)` - To take the backup of a volume group.
+- `vgchange -a -n vgdata` - to check about the active logical volumes
+- `vgcfgrestore -f /tmp/vgbackup vgdata` - Which will help to restore the volume group called vgdata
+
+- VG back up has been created automatically created in the CentOS system under `/etc/lvm`
+
+## Device Mapper: 
+
+- What is Device Mapper? 
+  - “Device Mapper is a Linux kernel framework that creates virtual block devices by mapping logical blocks to physical storage. LVM uses device-mapper to implement logical volumes, while features like RAID, encryption, snapshots, and multipathing reuse the same mechanism.”
+
+- Several advanced features are required in the Linux Operating system: 
+  - Cache
+  - Encryption
+  - raid 
+  - snapshot
+  - thin provisioning
+  - mirrorring
+- These features are provided by Device Mapper
+- Device Mapper maps physical block devices to virtual block devices, which are used by upper-layer systems such as LVM.
+
+![deviceMapper](<Screenshot 2025-12-14 at 9.43.34 PM.png>)
+- Device mapper is used to access the block devices using logical addressing.
+- In order to access these block devices, device mapper is creating virutal devices `/dev/dm-*`
+- For an example `ls -l /dev/mapper/vgdata-lvdata /dev/vgdata/lvdata` Both of them mapped to `/dev/dn-*`
+- `dmsetup ls` - Lists from the device mapper setup
+-  `demsetup info` - gives more info about the all of the devices that are available
+
+## Manually creating device mapper storage:
+
+- `dmsetup create` - Used to create devices without using an upper-layer device manager.
+- `dmsetup create <devicename> --table '0 <block count> linear <source-device> <start-block>'`
+
+## LVM and VDO
+- Virtual Data Optimizer provides thin provisioning on top of LVM lofical volumes by using data dedeuplication and compression.
+- VDO options will work only with LVM in RHEL 8. 
+- LVM also provides thin provisioning but VDO provides more efficient algorithms.
+- By VDO in the top of LVM, it easy to increase the size of the underlying volumes while running out of physical storage.
+- While creating VDO logical volumes, a minimal physical size of 5GB is required. - Due to heavy metedata storage.
+
+![vdo](<Screenshot 2025-12-14 at 10.28.33 PM.png>)
