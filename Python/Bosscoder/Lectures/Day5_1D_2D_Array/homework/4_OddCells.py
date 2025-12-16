@@ -5,21 +5,23 @@ class OddCells:
         self.arr = arr
         
     def solve(self):
-        rows, columns = [0] * self.n, [0] * self.m
-        sum = 0
-        for r ,c in self.arr:
-            rows[r] += 1
-            columns[c] += 1
-        
-        for i in range(self.n):
-            for j in range(self.m):
-                if rows[i] + columns[j] % 2 == 1:
-                    sum += 1
-        
-        return sum
-
-           
+        defaul_val = 0
+        n = self.n
+        m = self.m
+        indices = self.arr
+        mat = [[defaul_val for _ in range(m)] for _ in range(n)]
+        for ri, ci in indices:
+            for j in range(m):
+                mat[ri][j] += 1
             
+            for i in range(n):
+                mat[i][ci] += 1
+        odd_count = 0
+        for i in range(n):
+            for j in range(m):
+                if mat[i][j] % 2 == 1:
+                    odd_count += 1
+        return odd_count          
 
 
 if __name__ == "__main__":

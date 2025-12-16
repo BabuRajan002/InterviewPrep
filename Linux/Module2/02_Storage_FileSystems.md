@@ -73,3 +73,35 @@
 - While creating VDO logical volumes, a minimal physical size of 5GB is required. - Due to heavy metedata storage.
 
 ![vdo](<Screenshot 2025-12-14 at 10.28.33 PM.png>)
+
+## What is thin provisioning? 
+
+Virtual Allocation: Admins create large virtual disks (LUNs/volumes) for applications, making them appear much bigger than the initial physical space.
+Dynamic Allocation: When an application starts writing data, the storage system dynamically pulls blocks from the physical storage pool to fulfill the request.
+Space Efficiency: Physical space is only consumed by actual data, leaving unused allocated space as pointers until written.
+
+## What is stratis? 
+
+- Stratis volumes always use the XFS filesystem
+- Stratis volumes are thin provisioned in nature
+- Volume storage is allocated from the stratis pool
+
+## Linux Unified Key Setup (LUKS):
+- It encrypts the complete device, resulting in a new device mapper device
+- This device mapper device needs to be opened, after which a filesystem can be created on that device
+- Below are the commands to setup the encrypted device
+  ```336  cryptsetup luksOpen /dev/nvme0n1p4 secret
+  337  ls /dev/mapper/
+  338  ls -l /dev/mapper/
+  339  mkfs.ext4 /dev/mapper/secret
+  340  mount /dev/mapper/secret /mnt/
+  341  cryptsetup luksClose /dev/mapper/secret 
+  342  umount /mnt 
+  343  cryptsetup luksClose /dev/mapper/secret 
+  344  history``` 
+
+## Real World Scenario: Creating a Hidden Storage device: 
+
+![steps](<Screenshot 2025-12-15 at 10.40.16 PM.png>)
+
+- 
