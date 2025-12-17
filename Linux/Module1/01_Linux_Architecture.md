@@ -53,6 +53,49 @@
 - On an BIOS, system the first 512 bytes on disk are the boot loader 
 - 446 bytes are used for GRUB code
 - 64 bytes are used for the partition table
+- How to setup password for the grub2 bootloader 
+```
+  379  grub2-set-password 
+  380  vi /boot/loader/entries/
+  381  vi /boot/loader/entries/c6a3eec54e9149dd83b6adbbf9378c40-5.14.0-642.el9.aarch64.conf 
+  382  uname -r
+  383  vi /boot/loader/entries/c6a3eec54e9149dd83b6adbbf9378c40-5.14.0-645.el9.aarch64.conf 
+  384  reboot
+
+```
+
+## Updating and Modifying the initramfs:
+
+- `dracut -f` - Used in Redhat Family for updating the initramfs
+
+## How to install ext4 driver in the initramfs? 
+
+-  ``` 385  lsinitrd 
+  386  lsinitrd | grep ext4
+  387  clear
+  388  vi /etc/dracut.conf
+  389  vi /etc/dracut.conf.d/ext4.conf
+  390  dracut -f 
+  391  lsinitrd | grep ext4 ```
+
+## Sewrvice Managers:(Systemd)
+
+- Service managers take care of everything after the kernal and initrd have been loaded, and the root file system has beem mounted.
+- this consists of two stages 
+  - Initialize the remianing hardware devices
+  - Mounting the file systems
+  - starting the services
+## Accessing the Early boot shell
+- `systemd.unit=emergency.target` or `systemd.unit=rescue.target`
+- emergency.target is too early just has the minimal functionalities
+- rescue.target - Is stops the system before laoding the services.
+- rd.break or init=/bin/bash - Troubleshooting environment before the systemd is started.
+
+# Real world scenario: Recovering from the LOST MBR:
+- Step1: `dd if=/dev/zero of=/dev/sda bs=1 count=446` - Wiping out the boot records from the disk which contains the grub2 bootloader.
+- Step2: `reboot`
+- Step3: After the reboot it went to the installation disk. 
+- Step4: select Troubleshooting option
 
 ## Why kernals are not required to compile anymore? 
 
