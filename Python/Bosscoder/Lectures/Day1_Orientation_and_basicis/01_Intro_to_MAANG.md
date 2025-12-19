@@ -2,17 +2,17 @@
 # I am going to be top 1% level of person! 
 # I am the good problem Solver
 
-# MAANG(Meta, Apple, Amazon, Netflix and Google)
+# 46:00 Minutes - MAANG(Meta, Apple, Amazon, Netflix and Google)
 
 1. Good work 
 2. Work Culture
-3. Compensation 
+3. Compensation - There are some companies offering more than MAANG companies
 
 ***!!!Definitely Try here, but dont get restrict yourself in these companies!!***
 
-## What they are looking! 
+## 50:00 Minutes - What they are looking! 
 
-1. Problem solving skills
+1. Problem solving skills - Speed smart solution! 
 
 
 ## How to prepare? 

@@ -104,4 +104,98 @@ Space Efficiency: Physical space is only consumed by actual data, leaving unused
 
 ![steps](<Screenshot 2025-12-15 at 10.40.16 PM.png>)
 
-- 
+## VFS Virtual File systems:
+
+- Its is generic interface that is used by serveral specific filesystems to connect to the kernel
+- It provides the common system calls that are needed in all filesystems.
+- VFS is a interface that is going to be used by the Kernel
+- Application running in the User space will try do a syscalls to the VFS ---> ext4, xfs, vfat drivers to communicate with the kernel.
+![alt text](<Screenshot 2025-12-17 at 6.03.07 PM.png>)
+
+## POSIX: Portable Operating System Interface (Standardized System Calls)
+- The mission was to describe how system calls should behave.
+- Key Features:
+  - It should implement strong consistency
+  - It should implement the operations like random reads, writes, fsync, truncate operations
+  - File access is controlled by permissions, which are based on the file ownership and permissions mode
+
+- This POSIX filesystem always gives a standardization to applications that the system calls should be in specific way.
+
+![Posix](<Screenshot 2025-12-17 at 6.11.09 PM.png>)
+
+## POSIX filesystems implement common features: 
+  - inodes contain the file admin
+  - Special files like device nodes and named pipes can be used
+  - Directories are used for file admin
+  - Hard links and soft links can be used
+  - File system metadata can be stored in superblock
+
+- Superblock - Contains filessytem metadata
+- Directory Table - contains filesystem names, which points to filesystem inodes.
+- inode - Each file has a inode, which contains a list of blocks or extents that are used to store the file data.
+- block - original allocation of the file in the disk
+
+## inode and block allocation
+
+- When a filesystem is created, inode table will be created as well.
+- In xfs filesystem the inode table is flexible 
+- In ext4 filesystem the inode table is preallocated. You can run out of inodes.
+- inode keeps all administration of the file but not the filename
+
+## Sparse files
+
+- Sparse files offer a solution to use disk space in an efficient way when the file is partially empty
+- When creating a files, filesystems that support the fallocate() system call allocate blocks without actually writing anything in these blocks.
+
+## FUSE Filesystems:
+- FUSE filesystem is User space
+- It is useful as it allows for mounting filesystems in user space
+- Allows non-privileged users to mount
+- Fuse is not goof performance of our system
+
+## Using EST filesystem Debugger:
+
+- EXT4 is powerful tool. EXT filesystem debugger. 
+- debugfs (aks debug2fs) - Can be used to perform advances operations on Ext filesystems
+- Think of printing the filesystem administrative data in the superblock, dumping inodes, listing blocks used by specific files and more.
+- ***Important*** - debugfs utility is under the hood tool. We have to use it in a careful way. It may corrupt the entire filesystem.
+
+## Recovery of deleting file in ext4 using debugfs utility.
+- in ext3 filesystems, the lsdel command could be used to list recently deleted inodes.
+![recoverthedeletedfile](<Screenshot 2025-12-18 at 11.56.11 AM.png>)
+
+# Cloud and Datacenter Storage:
+
+## SSD:
+
+- No matter how advanced, all SSD devices wear out if written to too often.
+- On recent SSD devices it will take many years before you see problems related to this. 
+  - Limit swap usage 
+  - Dont fill SSD device to it's maximum
+  - Enable fstrim.service to inform the operating system which blocks on the device is no longer in use.
+  - user the `noatime` mount option.
+
+## Understanding iscsi:
+
+- ![iscsi](iscsi.png)
+
+## How to setup the iscsi? 
+
+- iScsi Components:
+  - `target` on the SAN gives access to the storage backends:
+     - Disks
+     - Partitions
+     - Logical Volumes
+     - Files
+  - Service Connect to these using iscsi initiator:
+    - After the sucessful connection the connected servers can see newly added storage devices. 
+      - Check in `/proc` partitions
+      - Or using lscsi command
+      ![iscsi terminology](iscsi_terminalogy.png)
+
+## Object storage
+- Here file is written as binary objects.
+- Binary objects are stored in a replicated way.
+- Ceph is the leading storage for the object storage in the open source world.
+
+![object storage](object_storage.png)

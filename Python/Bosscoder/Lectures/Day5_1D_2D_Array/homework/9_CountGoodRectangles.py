@@ -5,8 +5,6 @@ class CountGoodRectangles:
     def solve(self):
         arr = self.arr
         ans = []
-        m = len(arr)
-        n = len(arr[0])
         count = 0
         for rect in arr:
             i = 0
