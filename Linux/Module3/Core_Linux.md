@@ -152,3 +152,252 @@ Why it happens: This occurs during normal file reading (e.g., copying a file, ru
 ## Real world Scenario - Optimizing memory usage 
 
 - Zswap - Compressed swap stored in RAM
+
+# Processes:
+
+## How a process is created? 
+
+- When you run a command a new process is created as a child of current process
+- To do so, the current process created exact copy of itself, a new unique process ID as assigned, and code the of the child process is loaded - to make this happen `fork()` system call is used. 
+- Nex,`execve()` is used to replace the copied code with the new process code.
+- In some cases fork() cannot be used.
+- `execve()` can be used without forking the parent process. 
+- `execve()` system call replaces the current process with the new process
+- Because of that new process gets the PID of the old process, and no child-parent relationship created.
+
+## Difference between the `fork()` and `execve()` system calls? 
+
+- `fork()` - Will create a copy of the parent process and executes the code with a new PID
+- `execve()` - Will not copy the process instead it will go and replace the parent process and gets the same ID. Due to to this there is no parent - child relationship created. This is done using the `exec` command.
+
+```
+[root@localhost]~# ps faux | grep -B 6 zsh
+babu        2698  0.0  0.3 449980  6784 ?        Ssl  Dec22   0:00  \_ /usr/libexec/ibus-portal
+babu        2768  0.0  1.2 595836 21284 ?        Ssl  Dec22   0:02  \_ /usr/libexec/xdg-desktop-portal-gtk
+babu        2842  0.3  2.4 714864 42212 ?        Ssl  Dec22   4:50  \_ /usr/libexec/gnome-terminal-server
+babu        2861  0.0  0.3 223980  5412 pts/0    Ss   Dec22   0:00  |   \_ bash
+root        3042  0.0  0.4 238392  8044 pts/0    S    Dec22   0:00  |       \_ sudo -i
+root        3046  0.0  0.3 223984  5388 pts/0    S    Dec22   0:00  |           \_ -bash
+root       36284  0.0  0.2 223304  4056 pts/0    S    09:17   0:00  |               \_ zsh -----> Child Process done by `fork() system call
+root       36305  0.0  0.3 223876  5356 pts/0    S    09:18   0:00  |                   \_ bash
+root       36336  0.0  0.2 223300  4068 pts/0    S    09:18   0:00  |                       \_ zsh
+root       36352  0.0  0.2 225740  3768 pts/0    R+   09:19   0:00  |                           \_ ps faux
+root       36353  0.0  0.1 221376  2028 pts/0    S+   09:19   0:00  |                           \_ grep --color=auto -B 6 zsh
+
+```
+
+## Processes and Threads:
+
+- ***Processes*** - A Process is an independent, self contained execution environment that has its own memory space. ex: VM
+- ***Threads*** - Processes can create threads to run tasks that require concurrent execution. 
+- Threads share the same memory space as the parent process.
+- Threads are commonly used in web servers and database systems
+- The Kernel scheduler is reponsible for managing threads and processes.
+ 
+## When to use threads and when to use processes? 
+
+- If applications require separate memory space for tasks, processes are better, as each process gets its own memory space
+- If tasks need to share the data, threads are a better choice as they share the same memory space.
+
+## Killing a Zombie? 
+
+### How the process is killed in a normal situation? 
+- Processes can voluntarily stop, using the exit() system call.
+- Processes involutarily stop when they receive a signal.
+- Signals can be sent by other users, other processes, or LInux itself. 
+- When a process is stopped it issues the `exit()` system call. 
+- Next, Linux kernel notifies this process to its parent by sending `SIGCHLD` signal. 
+- The parent next executes the wait() system call to read the status of the child process as well as its exit code. 
+- While using `wait()`, the parent also removes the entry of the child process from the process table. 
+- Once that is done, process is removed.
+
+![process-kill](processKill.png)
+
+### Zombie process?
+
+- A zombie process is process that has completed its execution, but still has a PID in the process table
+- A child process gets the status of Zombie when the communication between child and parent on child `exit()` is disturbed.
+
+### ok, why this is happening? 
+
+- This may happen if the parent doesn't execute the wait() system call
+- It may also happen when the parent doesn't. receive the `SIGCHLD` signal from the child.
+
+## What is Orphan process? 
+
+- An orphan process is an active process whose parent process has finizhed. 
+- Upon termination of the parent process, active child processes are normally adopted by the init process
+- this ensures that the child process is getting properly reaped when it exits and doesn't become Zombie.
+
+```
+[root@localhost ~]# ps faux | grep -B 5 sleep
+babu        2924  0.0  0.2 375656  4028 ?        Ssl  Dec22   0:00  \_ /usr/libexec/gvfsd-metadata
+babu       37338  0.8  2.8 779292 50456 ?        Ssl  10:18   0:00  \_ /usr/libexec/gnome-terminal-server
+babu       37356  0.0  0.3 223872  5292 pts/1    Ss   10:18   0:00      \_ bash
+root       37384  0.0  0.4 238392  8036 pts/1    S    10:18   0:00          \_ sudo -i
+root       37389  0.0  0.3 223852  5240 pts/1    S    10:18   0:00              \_ -bash
+root       37428  0.0  0.0 220528  1740 pts/1    S    10:19   0:00                  \_ sleep 3600
+root       37429  0.0  0.0 220528  1532 pts/1    S    10:19   0:00                  \_ sleep 7200
+root       37432  0.0  0.2 225740  3684 pts/1    R+   10:20   0:00                  \_ ps faux
+root       37433  0.0  0.1 221376  2120 pts/1    S+   10:20   0:00                  \_ grep --color=auto -B 5 sleep
+[root@localhost ~]# kill -9 37389
+Killed
+
+[babu@localhost ~]$ ps faux | grep -B 5 sleep
+babu        2768  0.0  0.5 595836  9468 ?        Ssl  Dec22   0:02  \_ /usr/libexec/xdg-desktop-portal-gtk
+babu        2924  0.0  0.2 375656  4028 ?        Ssl  Dec22   0:00  \_ /usr/libexec/gvfsd-metadata
+babu       37338  0.5  2.9 779548 50580 ?        Rsl  10:18   0:01  \_ /usr/libexec/gnome-terminal-server
+babu       37356  0.0  0.3 223872  5292 pts/1    Ss   10:18   0:00  |   \_ bash
+babu       37455  0.0  0.2 225740  3776 pts/1    R+   10:22   0:00  |       \_ ps faux
+babu       37456  0.0  0.1 221376  2124 pts/1    S+   10:22   0:00  |       \_ grep --color=auto -B 5 sleep
+root       37428  0.0  0.0 220528  1740 pts/1    S    10:19   0:00  \_ sleep 3600 --> It became the Orphan process and taken over by init
+root       37429  0.0  0.0 220528  1532 pts/1    S    10:19   0:00  \_ sleep 7200
+
+
+```
+
+## How to clean the Zombie? 
+
+- Zombies are little bit complicate to clean up because the Zombies are already dead. 
+- Few workarounds: 
+  - use `kill -s SIGCHLD <PPID>` - to send the SIGCHLD signal to the parent PID
+  - Try to kill the parent PID, which will cause the Zombite process to be adopted by the init so that it can be reaped.
+  - Reboot the system
+
+- Below is the command to display the zombie process: 
+
+```
+root@localhost luth]# ps aux | grep defunc
+root       38312  0.0  0.0      0     0 pts/1    Z    10:36   0:00 [zombie] <defunct>
+root       38314  0.0  0.1 221376  2068 pts/1    S+   10:37   0:00 grep --color=auto defunc
+
+```
+- Below is the command to get the parent PID of a Zombie process.
+
+```
+[root@localhost luth]# ps -A ostat,pid,ppid | grep Z
+Z      38312   38311
+[root@localhost luth]# 
+```
+
+## Understanding the process scheduler: 
+
+- Linux uses schedulers at a different levels
+  - The process scheduler runs the process in realtime or normally
+  - The I/O scheduler defines how I/O requests are handled
+
+- Current Linux uses the complete Fair scheduler as the default scheduler
+
+## Understanding the scheduler policies:
+
+- `SCHED_OTHER` - The default Linux time-sharing scheduling policy which is used by the most process
+- `SCHED_BATCH` - a non-realtime scheduling policy that is designed for CPU intensive tasks
+- `SCHED_IDLE` - a policy which is intended for the low prioritized tasks
+- `SCHED_FIFO` - A real time scheduler that uses the First in First Out algorithm
+- `SCHED_RR` - Real time scheduler that used the round-robin scheduling
+
+## `chrt` command
+
+- `chrt -p <pid>` - To find the current scheduler policy a process is running
+- Using chrt command line options to habdle the process by a different scheduler
+
+## Understanding the Inter Process Communication
+
+- IPC defined how the process can communicate using the shared data without the intervention of the operating system and kernel interface.
+- A main goal of the IPC is reduce the fucntionality that is provided by the kernel.
+## Approaches of IPC:
+
+- Unamed pipes are used in the command line ex: `ls | less`
+- Named pipes use file as a pipe and can be bi-directional
+- Message-queue - Like pipes, but with re-ordering if data is received out of order. Can be used by applications like rsyslogd.
+- SIgnals are also considered to be IPC, where OS sending some signals to Process
+- RPC - Remote Procedure Calls - allow processes to call the other processes running in the same machine or in the remote machine.
+
+## Remote Procedure Calls:
+
+- RPC is used in distributed computing for executing the subroutines in a different address spaces. 
+- RPC is developed for client-server communication Ex: NFS
+
+# Lesson 11: Linux Commands and How do they work.
+
+## What happens when a command is executed in Linux?
+
+- Command need access to the specific system functions. i.e kernel space and user space 
+- Command needs to create the execution environment
+- It needs to load in memory
+- it requests access to system resources like files
+- it gets specific feature like system libraries
+- it needs to load library functions
+
+![How Linux Command Runs](<How Linux Command Rins.png>)
+
+## Understanding the task Struct:
+- From the process point of view, its the only thing running, and it has access to all memory and CPU. 
+- `task_struct` - is the backbone of the Linux Kernel management system
+- the `task_struct` includes the various fields that holds the process related information, this shows the different subdirs in /proc/PID
+- When a scheduler switches the CPU from one process to another (context switching), it saves the current state of the CPU in its task_struct and loads the task_struct of the new process. 
+- `/proc/PID` Is the best place to look what's currently going on with the `task_struct` internal kernel table.
+
+## System space and User Space:
+
+- User process typically need speicific functionality provided by the Linux Kernel 
+- If a process runs on the Kernel space, it has unlimited access to all kernel features
+- for a processes running in a user space, system calls are provided to expose speicifc parts of the kernel features
+- To do this process needs a specific capabilities to access these syetem calls.
+
+## Understanding System calls?
+
+- System calls are defined in the kernel source code to allow the programs to access the functionality provided by the Linux Kernel. 
+- They provide the controlled interface between the LInux Kernel space and the programs.
+- When programs are executing the system call means they run the spcific parts of kernel code from the user space. 
+
+![Systemcalls](UnderstandingSystemCalls.png)
+
+## User `strace` command to analyze what's going with the system calls
+
+- Notice that `strace` output is written to STDERR, not the STDOUT. 
+- `strace ls | &less`
+## How the processes gets access to the System call?
+
+- In the earlier versions of Linux, processes would run as root or non-priviliges user. 
+- This model was at risk of security threats
+- to offer more fine grained access to the processes, later they introduced capabilities. 
+- `setcap` used to set specific capabilities
+- `getcap` used to get the capability currently set on the programs.
+
+## How the process memory is organized? 
+
+- When a process starts, it allocated a virtual memory. 
+- Within the allocated virtual address space, the different areas will be used. 
+- `code segment` - Where the program code is loaded, its size is equal to the size of a process file
+- `data segment` - store the data and hard-coded variables defined by the programmer
+- `heap memory` - segment is used for dynamic memory allocation in addition to data segment. where the variabled allocated and free during the process execution. 
+- `Memory mapped regions` - are used for accessing the libraries and shared files. 
+- `stack memory` - used to accesing the function calls.
+
+![memory_allocation](memoryallocation.png)
+
+## Stack memory: 
+
+![stack memory](stackmemory.png)
+
+## heap memory:
+
+![heap](heam_memory.png)
+
+## How the Linux commands exactly creating a new processes? 
+
+- New processes are created by the parent process. 
+- To do so, the parent process normally uses the `fork()` system call to create the child process. 
+- after being created, the child process uses its `execve()` system call to create its own stack, heal and data. 
+- Alternatively, a new process can be created using the bash internal `exec` instead of `fork()`
+## Understanding the `fork()`:
+
+- While creating a new process the parent process copies its execution environment to create the child process. 
+- Using the `fork()` the child gets its own PID. 
+- Initially, the child process components loaded in the memory is exactly same as the parent process components. 
+- Later the child process `execve()` system call to replace the parent process's data and child's data will be loaded.
+
+## Allocattion of Memory:
+
+- `mmap()` - Used to create a new mapping in the virtual address space of the calling process.
