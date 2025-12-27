@@ -401,3 +401,24 @@ Z      38312   38311
 ## Allocattion of Memory:
 
 - `mmap()` - Used to create a new mapping in the virtual address space of the calling process.
+- `brk()` - Changes the location of a program break. Which defined the end of the process data segment. Increasing it results in allocating more memory.
+
+# Networking:
+
+## Linux Network device names:
+
+- MOdern Linux uses the BIOS device name as a network device names
+
+## The OSI MOdel:
+
+- Application layer - Ports are used and its present /etc/services
+- Transport layer - Protocols are used and its present in /etc/protocols
+
+- ![neyworking_layers](nerworking_layers.png)
+
+## Analyzing the packet headers:
+
+- To analyze the packets the library called libpcap is used.
+
+## IPV4 and IPV6 address:
+![NAT](NAT.png)
