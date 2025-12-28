@@ -422,3 +422,17 @@ Z      38312   38311
 
 ## IPV4 and IPV6 address:
 ![NAT](NAT.png)
+
+## How Linux chooses Network interfaces? 
+
+- ![LinuxNetworkInterfaces](LinuxNetworkInterfaces.png)
+- `traceroute -n 8.8.8.8` - Shows how many hops are there in between from one point to another.
+
+## Analyze and optimize the networking
+
+- network access layer is analyzied and monitored through `ethtool` and managed through `/proc/sys/net/core`
+
+## Bonding and Teaming:
+
+- Represents aggregated link that is backed by one or more network devices.
+- Aggregated device will contain the IP configuration and distribute the load between the connected devices.
