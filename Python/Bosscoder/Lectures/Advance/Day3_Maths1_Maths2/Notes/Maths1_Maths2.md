@@ -18,14 +18,17 @@
 ## 12:21 PM Four divisors --> Leetcode Which ever the number has 4 divisors total the numbers and return it. 
 
 
-## 1:09 Pm Day of the week from leetcode
+## 1:09 PM Day of the week from leetcode 
 
 - How to check whether a year is leap or not ?
+  i. year % 400 == 0 
+  ii. If above is false, check whether year % 100 == 0 
+  iii. If above is false, check whether year % 4 == 0 return leap year.
 
 ## 1:50 PM Unique path ---> leetcode
 
 - Based on the Dynamic Programming
-- Doing nothing is always 1 way in Dynamic programing
+- Doing nothing is always 1 way in Dynamic programming
 
 
 
