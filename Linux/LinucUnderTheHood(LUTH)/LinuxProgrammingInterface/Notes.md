@@ -243,5 +243,76 @@ This video provides an excellent visual walkthrough of how the heap grows and ho
 
 Would you like me to explain the different "bins" (fastbins, small bins, etc.) that `malloc` uses to stay fast in multi-threaded programs?
 
-# VI. USER AND GROUPS
+# VI. System and Process Information.
+- In older UNIX implementations, there was typically no easy way to introspectively
+analyze (or change) attributes of the kernel, to answer questions such as the following:
+- How many processes are running on the system and who owns them?
+- What files does a process have open?
+- What files are currently locked, and which processes hold the locks?
+- What are sockets being used on the system?
 
+## About `/proc` file :
+
+In Linux internals, calling `/proc` a **pseudo-filesystem** is one of the most important concepts to grasp. It means that while it *looks* like a directory full of files, it doesn't actually exist on your hard drive or SSD.
+
+### 1. The "Virtual" Nature
+
+If you were to turn off your computer, take out the hard drive, and plug it into another machine, you would not find a `/proc` folder on the disk.
+
+* **Non-Persistent:** It exists only in **RAM** and is created by the kernel when the system boots.
+* **Zero Size:** If you run `ls -l /proc/meminfo`, you will notice the file size is often reported as **0 bytes**. However, if you `cat` the file, it is full of data.
+
+### 2. A "Window" into the Kernel
+
+The `/proc` filesystem is actually an **interface**.
+When you "read" a file in `/proc`, you aren't reading bits off a platter; you are actually triggering a function inside the Linux kernel. The kernel "manages" these files by intercepting your request and generating the text output on the fly based on its internal data structures.
+
+> **Analogy:** Think of `/proc` like a speedometer in a car. The "speed" isn't a physical object you can touch; it’s a display that shows you the current state of the engine and wheels. Reading `/proc` is like looking at that display.
+
+---
+
+### 3. Why is it called "Pseudo"?
+
+It is "pseudo" (meaning "false" or "fake") because it follows the **Linux Philosophy: "Everything is a file."**
+
+The kernel designers wanted a way for users and scripts to check system stats (like CPU temperature or memory usage) without needing special, complex tools. By making these stats look like files, they allowed you to use standard commands like `cat`, `grep`, and `awk` to manage the system.
+
+### 4. Anatomy of `/proc`
+
+There are two main types of content in this filesystem:
+
+* **Numbered Directories (`/proc/[PID]`):** For every running process, the kernel creates a folder named after its Process ID. This contains the "truth" about that process (its memory, file descriptors, etc.).
+* **System Info Files:** Files like `/proc/cpuinfo`, `/proc/uptime`, and `/proc/loadavg` provide a snapshot of the hardware and global kernel state.
+
+---
+
+### SRE Knowledge Check: `/proc` vs `/sys`
+
+Interviewers at Nvidia or Google might ask: *"What is the difference between `/proc` and `/sys`?"*
+
+* **`/proc`:** Historically for **process** information and general system stats. It became a bit "messy" over time as developers threw everything in there.
+* **`/sys` (sysfs):** A newer, more organized pseudo-filesystem specifically designed to show the **hardware topology** (buses, devices, drivers, and power management).
+
+[Image comparing /proc and /sysfs hierarchy]
+
+---
+
+### Why this matters for SREs
+
+Knowing that `/proc` is a pseudo-filesystem explains why it is so **fast** to read, but also why you can't "edit" most of the files there with a text editor. Some files (like those in `/proc/sys/`) allow you to write to them to change kernel settings instantly (like the `dirty_cache` parameters we discussed earlier), which is called **Runtime Kernel Tuning**.
+
+![proc_subdirs](proc_subdirs.png)
+
+![proc_structure](proc_structure.png)
+
+- Some of the details we can get it from the `/proc` kernel interface: 
+
+- `cpuinfo` - Information about the CPU features
+- `meminfo` - detailed information anout the system memory
+- `cmdline` - contains current kernel boot command as issued by GRUB
+- `vmstat` - statistics about the current memory usage
+- `modules` - shows the kernel modules and their dependencies
+- `filesystems` - shows all currently loaded file system drivers
+- `devices` - all block and char devices and their major
+- `swaps` - shows all the swaps devcies currently in use
+- `mount` - shows the current mounted files 
