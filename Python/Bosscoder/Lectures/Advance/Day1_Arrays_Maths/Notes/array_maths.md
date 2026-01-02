@@ -86,3 +86,5 @@ while(left <= right and top <= bottom):
 return ans
 
 ```
+
+## 1:58 Minutes Vide0 - Trapping rainwater.

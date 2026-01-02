@@ -20,4 +20,4 @@
 - to calculate the space complexity we just need to keep in mind like how many arrays we have used in our program.
 - 
 
-![leetcode problem](<Screenshot 2025-12-21 at 12.20.25 PM.png>)
+![leetcodeProblem](leetocde.png)
