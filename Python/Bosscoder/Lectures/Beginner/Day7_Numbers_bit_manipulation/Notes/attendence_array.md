@@ -63,3 +63,4 @@ Why we need to check the LSB is 0 or 1?
 ![EvenOrODD](<Screenshot 2025-11-30 at 10.04.09 PM.png>)
 
 ## Q2 Check if the kth bit from the end is set or not ? 
+

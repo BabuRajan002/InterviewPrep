@@ -36,3 +36,6 @@
 
 # Code behind the Linux:
 
+- Linux is written in C
+- Source code of all Linux components is accessible and readable file
+

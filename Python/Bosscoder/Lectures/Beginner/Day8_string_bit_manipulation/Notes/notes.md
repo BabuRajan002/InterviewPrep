@@ -3,4 +3,7 @@
 
 ## Given array of intergers and an integer k. Check if there exists any pair (i,j) and 
 
-"Xor with the same number is Zero ----- Please remember"
+- "Xor with the same number is Zero ----- Please remember"
+
+## Subset: 
+

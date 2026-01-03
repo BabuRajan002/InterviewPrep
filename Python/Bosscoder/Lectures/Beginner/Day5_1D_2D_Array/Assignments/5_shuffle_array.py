@@ -10,7 +10,6 @@ class Shuffle:
         for i in range(n):
             ans.append(nums[i])
             ans.append(nums[i+n])
-
         return ans
 
 if __name__ == "__main__":

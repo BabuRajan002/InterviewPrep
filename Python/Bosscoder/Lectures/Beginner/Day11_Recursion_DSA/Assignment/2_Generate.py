@@ -6,8 +6,7 @@ class Generate:
         ans = []
         while self.n >= 1:
             ans.append(self.n)
-            self.n -= 1
-        
+            self.n -= 1        
         return ans
 
 if __name__ == "__main__":
