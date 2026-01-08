@@ -6,23 +6,36 @@ class MinimumSwaps:
     def solve(self):
         arr = self.arr 
         k = self.k
+        n = len(arr)
 
-        remMap = {}
-
+        favCount = 0
         for num in arr:
-            rem = num % k
-            if rem < 0:
-                rem += k
-            remMap[rem] = remMap.get(rem, 0) + 1
+            if num <= k:
+                favCount += 1
         
-        for key, value in remMap.items():
-            print(key, value)
+        badElements = 0
+        for i in range(favCount):
+            if arr[i] > k:
+                badElements += 1
+        minSwaps = badElements
 
-        # return remMap
-    
+        i = 0 
+        j = favCount
+        while j < n:
+            if arr[i] > k:
+                badElements -= 1
+            
+            if arr[j] > k:
+                badElements += 1
+            
+            minSwaps = min(minSwaps, badElements)
+
+            j += 1
+            i += 1
+        return minSwaps
 
 if __name__ == "__main__":
-    minswaps = MinimumSwaps([1,10,2,3,20,4,5], 5)
-    print(minswaps.solve())
+    minswap = MinimumSwaps([2, 7, 9, 5, 8, 7, 4], 5)
+    print(minswap.solve())
 
 
