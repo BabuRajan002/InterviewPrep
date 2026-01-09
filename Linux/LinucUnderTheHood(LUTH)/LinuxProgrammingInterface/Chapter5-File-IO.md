@@ -246,3 +246,167 @@ This is the most critical concept for understanding how Linux handles data.
 When you are ready, we will tackle **Pillar 2: Process Management**. We will learn exactly what happens inside the Kernel during a `fork()` and why `exec()` is the "brain transplant" of the Linux world.
 
 *Keep these notes in a file on your CentOS machine (e.g., `linux_io_mastery.txt`) for quick review!*
+
+This is a favorite "Senior SRE" interview question because it tests if you understand the boundary between the **Filesystem (i-nodes)** and the **Process (File Descriptors)**.
+
+---
+
+### The Scenario: "The Ghost in the Disk"
+
+**The Interviewer's Question:**
+
+> "Your monitoring system alerts you that a server's `/var/log` partition is **100% full**. You identify a massive 50GB log file named `service.log`. You run `rm /var/log/service.log` to free up space. However, when you run `df -h`, the disk space is **still 100% full**, and no space was reclaimed. Why did this happen, and how do you fix it without rebooting the server?"
+
+---
+
+### 1. The Troubleshooting Logic (The "Why")
+
+To solve this, you must explain the relationship between the **i-node table** and the **Open File Table**.
+
+* **What `rm` does:** When you run `rm`, you are removing a **link** (a name) from a directory that points to an **i-node**.
+* **The Reference Count:** The Kernel keeps a "reference count" on every i-node. An i-node is only deleted from the disk when its reference count reaches **zero**.
+* **The Conflict:** 1. The filename is gone (count decreases by 1).
+2. **BUT**, the running application still has the file open (Scenario 2/3). The **Open File Table** still has an entry pointing to that i-node (count remains > 0).
+* **Result:** The file is "invisible" to `ls`, but the Kernel refuses to delete the data blocks because a process is still using them.
+
+
+
+---
+
+### 2. The Investigation (The "How")
+
+The interviewer wants to see you use the tools we discussed: `lsof` or `/proc`.
+
+**Your Answer:**
+"I would search for 'deleted' files that are still held open by a process using `lsof` (List Open Files)."
+
+```bash
+# SRE Command to find the culprit
+lsof +L1
+
+```
+
+* **`+L1`**: Tells `lsof` to show files with a link count of less than 1 (deleted files).
+* **The Output:** It will show you the **PID** and the **File Descriptor (FD)** of the process holding the 50GB ghost file.
+
+Alternatively, you can look in the process's own directory:
+
+```bash
+ls -l /proc/[PID]/fd
+# You will see: 4 -> /var/log/service.log (deleted)
+
+```
+
+---
+
+### 3. The Fix (Applying File I/O Concepts)
+
+The interviewer will ask: *"How do you free the space without killing the process?"* (Because killing the process might crash a production service).
+
+**The "Junior" Mistake:** Try to `rm` it again (The file is already gone, this does nothing).
+**The "SRE" Solution: Truncation.**
+
+You can use the **Atomic Truncation** property. By redirecting "nothing" into the file descriptor through the `/proc` filesystem, you tell the Kernel to set the file size in the **i-node** to zero.
+
+```bash
+# The SRE 'Magic' Command
+truncate -s 0 /proc/[PID]/fd/[FD_NUMBER]
+
+# OR simply:
+true > /proc/[PID]/fd/[FD_NUMBER]
+
+```
+
+**Why this works:**
+Because you are accessing the file through its **File Descriptor**, you are talking directly to the **Open File Description**. By truncating it to 0, the Kernel immediately frees the data blocks on the disk, even though the file is still "open." `df -h` will now show the space is free!
+
+---
+
+### 4. Summary for the Interviewer
+
+* **The Concept:** A file exists as long as there is a name pointing to it **OR** a process holding it open.
+* **The Tables:** The **i-node** stores the data; the **Open File Table** stores the process's access.
+* **The Lesson:** Never `rm` a log file that is being written to; always **truncate** it (`> file.log`) to safely reclaim space.
+
+---
+
+### Next Step for you
+
+This scenario perfectly ties together **i-nodes**, **Reference Counting**, and **File Descriptors**.
+
+**Would you like to move on to Pillar 2: Process Management (Chapter 6), where we learn how these PIDs are created and how the Kernel manages them?**
+
+To wrap up Chapter 5, these sub-topics cover the "specialty tools" of File I/O. In a Google SRE or Systems Engineering interview, these are often the "edge cases" that explain why a system is failing under high load.
+
+---
+
+### 5.9 Non-blocking I/O (`O_NONBLOCK`)
+
+Standard I/O is **synchronous**: if you `read()` from a pipe and no data is there, the process "sleeps" until data arrives.
+
+* **The Concept:** Setting the `O_NONBLOCK` flag tells the kernel: "If the data isn't ready right now, don't put me to sleep. Just return an error (`EAGAIN` or `EWOULDBLOCK`) so I can do other work."
+* **SRE Interview Scenario:** * **Question:** "Your web server is hanging and not responding to new requests, but CPU usage is 0%. What’s happening?"
+* **Answer:** "The server is likely stuck in a **blocking I/O call** (like reading from a slow database or a hung network socket). I would use `strace` to see if a process is stuck on a `read()` or `write()`. To fix this, the application should use `O_NONBLOCK` or an I/O multiplexer like `epoll`."
+
+
+
+---
+
+### 5.10 I/O on Large Files (LFS)
+
+This is mostly historical but still relevant for 32-bit systems or legacy code.
+
+* **The Concept:** Originally, Linux used 32-bit integers for file offsets, meaning the maximum file size was  bytes (2GB). **LFS (Large File Support)** allows 64-bit offsets to handle files larger than 2GB (up to Exabytes).
+* **SRE Interview Scenario:**
+* **Question:** "You have a legacy 32-bit application that crashes exactly when its log file hits 2GB. Why?"
+* **Answer:** "The app is likely not compiled with `_FILE_OFFSET_BITS=64`. When it tries to `write()` or `lseek()` past 2GB, the 32-bit integer overflows, and the kernel sends a `SIGXFSZ` (File Size Exceeded) signal, killing the process."
+
+
+
+---
+
+### 5.11 The `/dev/fd` Directory
+
+* **The Concept:** For every open file descriptor a process has, there is an entry in `/dev/fd/n` (which is a symbolic link to `/proc/self/fd/n`).
+* **The Use Case:** It allows programs that expect a **filename** as an argument to instead use an **existing file descriptor**.
+* **SRE Interview Scenario:**
+* **Question:** "How can you pass the output of one command as a file to another command that doesn't support piping?"
+* **Answer:** "Using **Process Substitution** in bash (e.g., `diff <(ls folder1) <(ls folder2)`). Under the hood, the shell uses `/dev/fd` to treat the output of those pipes as actual files."
+
+
+
+---
+
+### 5.12 Creating Temporary Files
+
+* **The Concept:** Functions like `mkstemp()` or `tmpfile()` create a file with a unique name, open it, and immediately provide a file descriptor.
+* **The Security Trap:** A major "Junior" mistake is `mktemp()` (getting a name) followed by `open()`. This creates a **Race Condition** where an attacker could create a symlink with that name in between those two calls.
+* **SRE Interview Scenario (The "Secure Delete" Trick):**
+* **Question:** "How do you create a temporary file that is guaranteed to be deleted even if the program crashes?"
+* **Answer:** "Call `mkstemp()` to create and open the file, then **immediately call `unlink()**` on the filename. Because of the 'Reference Counting' we discussed, the file stays on disk as long as the FD is open, but as soon as the process exits or closes the FD, the kernel deletes it automatically. No one else can see the file because the name is gone from the directory."
+
+
+
+---
+
+### Summary Table for Chapter 5 Completion
+
+| Sub-topic | Key Flag/Function | SRE Keyword |
+| --- | --- | --- |
+| **5.9** | `O_NONBLOCK` | **Concurrency / Performance** |
+| **5.10** | `O_LARGEFILE` | **Legacy Compatibility** |
+| **5.11** | `/dev/fd` | **Shell Redirection / Pipes** |
+| **5.12** | `mkstemp()` / `unlink()` | **Security / Automatic Cleanup** |
+
+---
+
+### Final Checkpoint
+
+You have officially conquered **Chapter 5**. You understand:
+
+1. How files are opened and flags are managed (`fcntl`).
+2. The 3-table architecture (FD, Open File, i-node).
+3. How duplication (`dup2`) and redirection work.
+4. How to troubleshoot "ghost files" and blocked processes.
+
+**Would you like to start Pillar 2 (Chapter 6: Processes) by seeing the code for a basic Linux Shell? It uses `fork`, `exec`, and `wait` all in about 20 lines of code!**
