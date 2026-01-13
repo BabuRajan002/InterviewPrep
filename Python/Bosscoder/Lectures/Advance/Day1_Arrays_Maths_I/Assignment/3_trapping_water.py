@@ -1,32 +1,61 @@
 # Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.
 
-class TrappingRainwater:
-    def __init__(self, arr):
-        self.arr = arr
+# class TrappingRainwater:
+#     def __init__(self, arr):
+#         self.arr = arr
     
-    def trap(self):
-        arr = self.arr 
-        n = len(arr)
+#     def trap(self):
+#         arr = self.arr 
+#         n = len(arr)
 
-        water = 0
-        for i in range(n):
-            leftMaxBuildingHeight = 0
-            rightMaxBuildingHeight = 0
+#         water = 0
+#         for i in range(n):
+#             leftMaxBuildingHeight = 0
+#             rightMaxBuildingHeight = 0
 
-            for l in range(i):
-                leftMaxBuildingHeight = max(leftMaxBuildingHeight, arr[l])
-
-            
-            for r in range(i+1, n):
-                rightMaxBuildingHeight = max(rightMaxBuildingHeight, arr[r])
+#             for l in range(i):
+#                 leftMaxBuildingHeight = max(leftMaxBuildingHeight, arr[l])
 
             
-            trapped = min(leftMaxBuildingHeight, rightMaxBuildingHeight) - arr[i]
+#             for r in range(i+1, n):
+#                 rightMaxBuildingHeight = max(rightMaxBuildingHeight, arr[r])
 
-            if trapped > 0:
-                water += trapped
-        return water
+            
+#             trapped = min(leftMaxBuildingHeight, rightMaxBuildingHeight) - arr[i]
+
+#             if trapped > 0:
+#                 water += trapped
+#         return water
+
+# if __name__ == "__main__":
+#     trapping = TrappingRainwater([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
+#     print(trapping.trap())
+
+class Trapping:
+   def __init__(self, height):
+      self.height = height 
+   
+   def solve(self):
+      height = self.height 
+      l ,r = 0, len(height) - 1
+      leftMax = height[l]
+      rightMax = height[r]
+
+      totalWater = 0
+
+      while l < r:
+
+        if leftMax < rightMax:
+            l += 1 
+            leftMax = max(leftMax, height[l]) 
+            totalWater += leftMax - height[l]
+        else:
+            r -= 1
+            rightMax = max(rightMax, height[r])
+            totalWater += rightMax - height[r]
+      return totalWater
 
 if __name__ == "__main__":
-    trapping = TrappingRainwater([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
-    print(trapping.trap())
+
+  trap = Trapping([0,1,0,2,1,0,1,3,2,1,2,1])  
+  print(trap.solve())
