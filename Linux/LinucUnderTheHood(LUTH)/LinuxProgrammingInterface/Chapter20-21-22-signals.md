@@ -257,3 +257,114 @@ kill -l 0x$(grep SigCgt /proc/$$/status | awk '{print $2}')
 **The SRE Question:** *"What happens to your data if the power goes out? Is it in the Disk cache, the Kernel cache, or the Application buffer?"*
 
 **Ready to move to I/O or do you have more questions on Signals?**
+
+This is one of the most common "aha!" moments in Linux SRE training. To understand why a process gets **PID 1** inside a container, you have to understand how Linux **Namespaces** work.
+
+### 1. The Concept: Nested Realities (Namespaces)
+
+In Linux, a **Namespace** is a feature that wraps a global system resource in an abstraction. To the processes inside the namespace, it looks like they have their own isolated instance of that resource.
+
+When Docker starts a container, it creates a new **PID Namespace**.
+
+* **Outside the container (Host):** Your Java app might have a PID like `45021`.
+* **Inside the container:** That same process is assigned **PID 1**.
+
+Think of it like an apartment building. The building address is "123 Main St" (Host), but inside the building, there is an "Apartment 1" (Container). To the person living in Apartment 1, they are at the "first" door, even though they are the 100th person in the whole city.
+
+---
+
+### 2. The Incident Analysis: Why PID 1 is "Immune"
+
+In a standard Linux OS (like your CentOS lab), **PID 1** is `systemd` or `init`. The Kernel treats PID 1 differently than any other process:
+
+1. **No Default Handlers:** For a normal process, if you send `SIGTERM`, the Kernel kills it by default. For **PID 1**, the Kernel **refuses** to kill it unless the process has explicitly written code to handle that signal.
+2. **The "Safety" Rule:** This is a safety feature. If the Kernel allowed PID 1 to be killed easily, the entire OS would crash instantly.
+
+**The Docker Problem:**
+When you run `CMD ["java", "-jar", "app.jar"]`, the Java Virtual Machine (JVM) becomes PID 1 inside that container's namespace.
+
+* **Docker stop:** Sends `SIGTERM` to PID 1.
+* **The JVM:** Since it’s PID 1 and usually doesn't have a specific "Signal Listener" configured for `SIGTERM`, it **ignores** the signal.
+* **The Kernel:** Sees that PID 1 ignored the signal and does nothing.
+* **The Result:** Docker waits for its default timeout (10 seconds), gets frustrated, and sends `SIGKILL` (which cannot be ignored).
+
+**This is a "Dirty Shutdown"**—your app didn't close database connections or finish writing to logs; it just vanished.
+
+---
+
+### 3. Troubleshooting & Verification (Lab Exercise)
+
+You can see this happening on your CentOS machine using a simple container.
+
+**Step 1: Run a container that does nothing**
+
+```bash
+docker run -d --name stubborn-container alpine sleep 1000
+
+```
+
+**Step 2: Check the PID inside the container**
+
+```bash
+docker exec stubborn-container ps aux
+
+```
+
+*You will see `sleep 1000` is **PID 1**.*
+
+**Step 3: Try to stop it and time it**
+
+```bash
+time docker stop stubborn-container
+
+```
+
+*You will see it takes exactly **10.xxx seconds**.*
+
+---
+
+### 4. The SRE Fix: `tini` or `dumb-init`
+
+To fix this, we use a "tiny" init process. This process is designed to:
+
+1. Be PID 1.
+2. Actually **listen** to signals like `SIGTERM`.
+3. **Forward (Proxy)** those signals to your Java app.
+4. **Reap Zombies** (since PID 1 is also responsible for cleaning up defunct processes).
+
+**The Correct Dockerfile Pattern:**
+
+```dockerfile
+# Add tini
+RUN apk add --no-cache tini
+# Use tini as the entrypoint
+ENTRYPOINT ["/sbin/tini", "--"]
+# Now Java runs as a child of tini, NOT as PID 1
+CMD ["java", "-jar", "app.jar"]
+
+```
+
+---
+
+### 5. Interview Perspective: The Google "Drill-Down"
+
+**Interviewer:** *"If I don't want to use an init-wrapper, is there another way to make sure Java isn't PID 1?"*
+
+**The Expert Answer:**
+
+> "Yes. If you use the **Shell form** of CMD instead of the **Exec form**, the shell becomes PID 1.
+> * **Exec form:** `CMD ["java", "-jar", "app.jar"]` -> Java is PID 1.
+> * **Shell form:** `CMD java -jar app.jar` -> `/bin/sh -c` is PID 1, and Java is its child.
+> 
+> 
+> **However**, this is actually **worse**. Most shells (like `/bin/sh`) do not forward signals to their children. So when Docker stops the container, the shell gets the `SIGTERM`, ignores it, and you still wait 10 seconds for the `SIGKILL`. This is why using `tini` or `dumb-init` is the industry standard for reliable SRE operations."
+
+---
+
+### Next Step: Phase 3 - File I/O (Chapters 13 & 14)
+
+We've mastered how processes live, die, and handle signals. Now we must look at how they talk to the disk.
+
+**The SRE Scenario:** Your application writes a log file. You run `ls -l` and see the file size is 1GB. You run `rm logs.txt`. The file is gone from the folder, but `df -h` still says the disk is 99% full.
+
+**Would you like to analyze this "Invisible Disk Usage" incident next?** (This is a Tier-1 SRE interview question).
