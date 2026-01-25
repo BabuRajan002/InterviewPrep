@@ -707,3 +707,368 @@ In the next subtopic, we discuss **Journaling**. This is the SRE's best friend b
 
 **Are you ready to see how Linux survives a "Hard Power Off"?**
 
+To conclude **Chapter 14**, we will cover the final critical topics: **Journaling**, **Mounting**, and **Filesystem Maintenance**.
+
+In a Google SRE interview, these topics are grouped under "Reliability and Troubleshooting." Here is the breakdown of the remaining subtopics combined into a single, comprehensive SRE guide.
+
+### 14.5 Journaling Filesystems (Ext4, XFS)
+
+**The Concept:** In the old days (Ext2), if a server crashed, the filesystem was "unclean." You had to run `fsck`, which scanned the *entire* disk to fix inconsistencies. This could take hours for a 10TB drive.
+**The Solution:** A **Journal** is a circular buffer (a small log) on the disk. Before the kernel performs any metadata changes (like creating a file), it writes the intent to the Journal first.
+
+* **On Crash:** The kernel simply "replays" the small Journal. Recovery takes seconds, not hours.
+
+### 14.6 Mount Points & The Mount Table
+
+**The Concept:** Linux has a "Single Hierarchical Tree." You attach different disks to this tree using **Mount Points**.
+
+* **Mount Namespace:** SREs use these for containers. Each container can see a different set of mounted drives.
+* **Standard Tool:** `mount` and `/etc/fstab`.
+
+### 14.7 Deleting Files (Unlinking)
+
+**The Concept:** As we discussed, `rm` calls `unlink()`.
+
+* The data is only deleted if: **Link Count = 0** AND **Open File Descriptor Count = 0**.
+
+---
+
+### 💼 Google SRE Interview Scenarios (The Final Exam)
+
+#### Scenario 1: The "Zombie" Disk Space
+
+**Interviewer:** *"Monitoring shows a disk is 99% full. You find a huge 100GB log file and `rm` it. `ls` shows it's gone, but `df -h` still says 99% full. What is happening and how do you fix it without a reboot?"*
+**SRE Answer:** 1. "The file was deleted from the directory (Link Count = 0), but a process still has it open (Open Ref Count > 0). The kernel won't release the data blocks until the process closes the file."
+2. **Command to find the process:** `lsof | grep deleted` or `ls -l /proc/*/fd | grep deleted`.
+3. **The Fix:** Restart the process, OR truncate the file without closing it: `truncate -s 0 /proc/<PID>/fd/<FD_NUMBER>`. This reclaims the space immediately while the process continues to run.
+
+#### Scenario 2: The "Read-Only" Filesystem
+
+**Interviewer:** *"Suddenly, a production server starts throwing 'Read-only filesystem' errors. You check `mount`, and it says 'ro'. Why did the kernel do this?"*
+**SRE Answer:** 1. "When a journaling filesystem (like Ext4) encounters a critical I/O error (hardware failure or metadata corruption), its default policy is to **Remount as Read-Only** to prevent further data corruption."
+2. **Investigation:** Check `dmesg | tail` to see the hardware error.
+3. **The Fix:** Attempt to fix the metadata: `fsck -y /dev/sda1`. If it's a hardware failure, the disk must be replaced.
+
+#### Scenario 3: Mount Propagation & Shared Mounts
+
+**Interviewer:** *"You mount a new disk on the host machine, but the Docker containers running on that host cannot see the new directory. Why?"*
+**SRE Answer:** "This is a **Mount Namespace** issue. If the container was started before the mount happened, it won't see it unless the mount point was configured with **Shared Propagation** (`mount --make-shared`)."
+
+---
+
+### 🛠️ Essential SRE Troubleshooting Toolkit
+
+### Chapter 14 Conclusion Summary:
+
+1. **VFS:** The layer that makes everything look like a file.
+2. **Inodes:** The metadata storage (fixed size).
+3. **Dentries:** The memory cache for names.
+4. **Journaling:** The "Undo Log" that makes recovery fast.
+5. **Links:** Hard links (same Inode) vs. Soft links (path strings).
+
+**Congratulations!** You have finished the "Storage" heart of the Linux Programming Interface. You now understand how a byte moves from an application's `write()` call, through the VFS, into a Dentry, into an Inode, and finally into a Data Block on a partition.
+
+**Are you ready for Chapter 15: File Attributes (Permissions, Chmod, and the Sticky Bit)?** This is where we learn how to secure the data we just learned to store.
+
+This is the most classic "SRE P0" incident. In this lab, we will simulate a "ghost" file that consumes disk space even after being deleted.
+
+### Lab Exercise: The "Ghost" File (Scenario 1)
+
+This lab requires a Linux environment (CentOS/Ubuntu). We will create a small filesystem, open a large file with a process, delete the file, and observe the space "disappearing."
+
+#### Step 1: Create a tiny "Disk"
+
+We'll use a loop device so we don't mess with your actual system.
+
+```bash
+# Create a 100MB virtual disk
+dd if=/dev/zero of=ghost_disk.img bs=1M count=100
+mkfs.ext4 ghost_disk.img
+mkdir -p /mnt/ghost_lab
+mount -o loop ghost_disk.img /mnt/ghost_lab
+
+```
+
+#### Step 2: Create a "Large" file
+
+We will fill 70% of this disk.
+
+```bash
+# Create a 70MB file
+dd if=/dev/zero of=/mnt/ghost_lab/big_log_file.log bs=1M count=70
+df -h /mnt/ghost_lab
+# You should see ~70% used.
+
+```
+
+#### Step 3: Simulate a Process holding the file open
+
+We will use `tail -f` to act as a "Logging Daemon" that keeps a file descriptor open to this file.
+
+```bash
+# Run this in the background
+tail -f /mnt/ghost_lab/big_log_file.log &
+# Note the PID (Process ID) that appears
+
+```
+
+#### Step 4: Delete the file (The "Mistake")
+
+An junior admin sees the disk is full and deletes the file.
+
+```bash
+rm /mnt/ghost_lab/big_log_file.log
+ls /mnt/ghost_lab/
+# Output: Empty! The file is gone.
+
+```
+
+#### Step 5: The Mystery
+
+Check the disk space again.
+
+```bash
+df -h /mnt/ghost_lab
+# Output: Still 70% used! Even though 'ls' says the folder is empty.
+
+```
+
+---
+
+### The SRE Investigation (The Solution)
+
+As an SRE, you now have to find where that 70MB went.
+
+**1. Identify "Deleted but Open" files:**
+
+```bash
+lsof +L1 /mnt/ghost_lab
+# OR
+ls -l /proc/*/fd | grep deleted
+
+```
+
+*You will see `tail` listed with a file descriptor pointing to `(deleted)`.*
+
+**2. Reclaim space WITHOUT killing the process:**
+If this were a critical production database, you might not be allowed to restart the process. We can "empty" the file by its file descriptor.
+
+```bash
+# Find the FD number from lsof (usually 3 or 4)
+# Redirect nothing into the file descriptor path
+truncate -s 0 /proc/$(pidof tail)/fd/3 
+# (Replace '3' with the FD number found in lsof)
+
+```
+
+**3. Verify:**
+
+```bash
+df -h /mnt/ghost_lab
+# Output: Space is now RECLAIMED! (0% used)
+
+```
+
+---
+
+### 📝 Lab Summary for your Notes
+
+**Did that lab help you visualize the "Ghost" file?** It is a perfect example of the Inode "Reference Counting" we discussed.
+
+If you are ready, we can start **Chapter 15: File Attributes**! (Permissions, Ownership, and the Sticky Bit).
+
+You are thinking exactly like a senior SRE. You’ve spotted the **risk**.
+
+Yes, truncating a file while a process is writing to it can absolutely cause issues, but the type of issue depends entirely on **how** that specific application handles its file descriptors.
+
+Here is the "Real World" breakdown of what happens when you truncate an open file:
+
+### 1. The "Success" Scenario: Appenders (Logs)
+
+Most logging daemons (like `syslog`, `nginx`, or `java` loggers) open files in **append mode**.
+
+* **What happens:** When you truncate the file to 0, the next time the app writes, it simply sees the file is empty and writes at the beginning.
+* **The Result:** No crash. You lose the old logs (which you already "deleted" anyway), but the app continues perfectly. This is the most common SRE "quick fix" for runaway logs.
+
+### 2. The "Failure" Scenario: Database/Stateful Apps
+
+If the process is a database (like MySQL or a binary state file) that relies on specific **offsets**:
+
+* **The Risk:** The app might think it is at byte 1,000,000. If you truncate the file to 0, the next write might create a **"File Hole."** The app writes at byte 1,000,001, and the filesystem creates a "sparse" area of zeros for the first 1,000,000 bytes.
+* **The Result:** You didn't actually save any disk space! The file size immediately jumps back to 100GB (sparse). Even worse, the application might crash because its internal index no longer matches the file structure.
+
+### 3. The "Corrupt" Scenario: Memory Mapped Files (mmap)
+
+If the app uses `mmap()` (mapping the file directly into RAM):
+
+* **The Risk:** Truncating the underlying file will cause the next memory access by the app to trigger a **SIGBUS** signal.
+* **The Result:** The application will **crash instantly**.
+
+---
+
+### 💼 SRE "Best Practice" Workflow
+
+In a real Google-scale production environment, we follow this hierarchy to avoid the risks you mentioned:
+
+1. **Graceful Rotation:** First, try to tell the app to close and reopen the file. Many Linux daemons respond to a **SIGHUP** signal for this:
+```bash
+kill -HUP <pid>
+
+```
+
+
+2. **The "Copy-Truncate" Pattern:** This is what `logrotate` does. It copies the content elsewhere, then truncates.
+3. **The "Last Resort" Truncation:** Only truncate manually if:
+* The disk is at 100% and the system is about to crash (Panic mode).
+* The file is a simple log file (text-based, append-only).
+* You have verified with `lsof` that it isn't a database or memory-mapped file.
+
+
+
+---
+
+This is a brilliant question. It gets to the heart of why databases are "special" in the SRE world.
+
+To answer this, we have to look at the **two ways** an application can talk to the disk.
+
+### 1. The Standard Way: "Filesystem Access" (Redis, MySQL)
+
+Contrary to what you might think, **Redis and MySQL *do* use Inodes and the VFS.**
+
+When Redis saves its data (the `.rdb` or `.aof` file), it doesn't talk to the hardware directly. It asks the Linux Kernel: *"Please open a file named `dump.rdb`."*
+
+**The Visualization (The Redis "Save" Flow):**
+
+1. **Redis Application:** Issues a `write()` system call with its memory buffer.
+2. **VFS Layer:** Sees the request and finds the **Inode** for `dump.rdb`.
+3. **Inode Metadata:** Tells the kernel: "This file lives in Blocks 5000-6000."
+4. **Page Cache:** The kernel first writes the data into **RAM** (the Page Cache). This is why Redis is so fast—it thinks the data is "on disk" as soon as it hits the Kernel's memory.
+5. **Disk Driver:** Later, the kernel "flushes" those blocks from RAM to the physical blocks on the SSD.
+
+**Why do they do this?** Because managing the physical health of an SSD (bad blocks, wear leveling) is incredibly hard. Databases let the Filesystem (Ext4/XFS) handle the "geometry" while they handle the "data."
+
+---
+
+### 2. The "Raw" Way: "Direct I/O" or "Raw Devices"
+
+Some high-performance databases (like Oracle or some low-level storage engines) want to **bypass** the VFS and the Page Cache to avoid "double buffering."
+
+There are two ways they do this:
+
+* **Direct I/O (`O_DIRECT`):** The app still uses a file and an Inode, but it tells the kernel: *"Don't put this in RAM; go straight to the disk."*
+* **Raw Block Access:** The app opens `/dev/sdb` directly instead of a file. In this case, **there is no Inode.** The app treats the whole disk like one giant array of bytes and manages its own "map" of where data lives.
+
+---
+
+### 3. Special Case: Redis Persistence (AOF vs RDB)
+
+Let's visualize the "Inode" behavior of Redis specifically, as it's a common SRE interview topic.
+
+#### The RDB (Snapshot) "Atomic Swap":
+
+Redis doesn't just overwrite its old file. That would be dangerous (if it crashed mid-write, the file would be corrupted).
+
+1. Redis writes to a **temporary file**: `temp-123.rdb` (**New Inode Created**).
+2. Once finished, it calls `rename("temp-123.rdb", "dump.rdb")`.
+3. **VFS Magic:** The Directory Entry for `dump.rdb` is updated to point to the **New Inode**. The **Old Inode** is unlinked and its blocks are freed.
+4. **SRE Result:** The update is **Atomic**. You never have a "half-written" dump file.
+
+#### The AOF (Append Only) "Growth":
+
+1. Redis keeps one file open: `appendonly.aof` (**One Persistent Inode**).
+2. Every command is appended to the end.
+3. The Inode's `size` metadata field grows constantly.
+4. The Inode adds more and more **Data Block Pointers**.
+
+---
+
+### 🛠️ Visualization: Database vs. Filesystem
+
+I've put together a comparison to show how a Database "lives" inside the structures we just studied.
+
+### Conclusion for Chapter 14:
+
+Whether it is a simple `txt` file or a complex **Redis** database, **everything goes through the Inode.** The Inode is the "Contract" between the Software and the Physical Metal.
+
+If you delete a Redis dump file while Redis is running, you get the **"Ghost File"** problem we just simulated in the lab! Redis will keep writing to that Inode, the disk will stay full, but you won't see the file in `ls`.
+
+**Does that help connect the Database world to the Inode world?**
+
+If so, we are officially ready for **Chapter 15: File Attributes and Permissions!** This covers who is allowed to touch those Inodes we've spent so much time studying.
+
+I will generate the full markdown content for the Chapter 14 Command Reference directly in the text below so you can copy the entire block easily into your notes.
+
+# SRE Command Reference: Chapter 14 - File System Internals
+
+This cheat sheet maps Linux commands to the specific production issues they solve, as discussed in the context of Google SRE troubleshooting.
+
+---
+
+### 1. Disk Space & Inode Exhaustion
+
+Used when services fail with "No space left on device" errors.
+
+| Command | Usage in Production |
+| --- | --- |
+| **`df -h`** | **High-level check:** Identifies which mount point is physically full. |
+| **`df -i`** | **Inode check:** Identifies if a disk is "full" due to too many tiny files (Index nodes exhausted) despite having GBs of free space. |
+| **`du -sh /* --max-depth=1`** | **Space Culprit:** Quickly drills down into which top-level directory is consuming the most storage. |
+| **`find /path -type f | wc -l`** | **File Count:** Manually counts files in a directory to find the source of Inode exhaustion. |
+
+---
+
+### 2. The "Ghost File" (Deleted but Open)
+
+Used when `df` shows a full disk, but `du` cannot find any large files.
+
+| Command | Usage in Production |
+| --- | --- |
+| **`lsof +L1`** | **The Ghost Finder:** Lists all open files with a link count of 0. These are files that were deleted (`rm`) but are still held open by a process, consuming space. |
+| **`ls -l /proc/*/fd | grep deleted`** | **Alternative Ghost Finder:** Locates the specific File Descriptor (FD) in the `/proc` filesystem for a deleted file. |
+| **`truncate -s 0 /proc/PID/fd/FD`** | **Space Reclaim:** Safely empties a "Ghost File" without killing the process. Ideal for runaway logs held by critical daemons. |
+
+---
+
+### 3. Inode & Metadata Deep-Dive
+
+Used to audit file changes, verify hard links, or investigate filesystem corruption.
+
+| Command | Usage in Production |
+| --- | --- |
+| **`stat <filename>`** | **Metadata Audit:** Shows Inode number, link count, and `atime/mtime/ctime`. Used to verify if a file was "timestomped" or if permissions were changed (`ctime`). |
+| **`ls -li`** | **Link Verification:** Displays the Inode ID. Used to confirm if two files are Hard Links (sharing the same Inode). |
+| **`find / -inum <inode_id>`** | **Reverse Lookup:** Finds all filenames on a partition that point to a specific Inode ID. |
+| **`dumpe2fs -h /dev/sdX`** | **Superblock Dump:** Shows filesystem metadata (block size, last mount time, reserved blocks). Used for post-crash analysis. |
+
+---
+
+### 4. Mounting & VFS Management
+
+Used for investigating "Read-Only" filesystem flips or mount propagation issues.
+
+| Command | Usage in Production |
+| --- | --- |
+| **`mount -v`** | **Mount Table:** Shows the current mount options (e.g., `rw` vs `ro`). |
+| **`mount -o remount,rw /`** | **Emergency Fix:** Attempts to flip a filesystem back to "Read-Write" after the kernel marks it "Read-Only" due to errors. |
+| **`findmnt`** | **VFS Tree:** Provides a hierarchical tree view of all mounts, including complex pseudo-filesystems like `proc`, `sys`, and `tmpfs`. |
+| **`fuser -m /mnt/path`** | **Unblock Unmount:** Identifies which PIDs are currently using a mount, preventing you from unmounting the drive. |
+
+---
+
+### 5. Loop Devices & Virtual Storage
+
+Used for container volumes, snapshots, or testing filesystems in files.
+
+| Command | Usage in Production |
+| --- | --- |
+| **`losetup -a`** | **Loop Audit:** Lists all active file-to-device mappings. Used to find which `.img` file is backing a specific `/dev/loop` device. |
+| **`losetup -f <file>`** | **Setup:** Manually attaches a file to the first available loop device. |
+| **`fallocate -l <size> <file>`** | **Pre-allocation:** Creates a file for a loop device that is NOT sparse. This prevents disk I/O "jitter" during first-time writes. |
+
+---
+
+### SRE "Pro-Tip" for Chapter 14:
+
+If a critical database is failing because of disk space, **NEVER** use `rm` on a log file first. Always use `> file.log` (Shell redirection) or `truncate`. This ensures the space is reclaimed **instantly** because the open file descriptor remains valid but the data blocks are released.
+
+With this summary, we have completed Chapter 14. Should we begin **Chapter 15: File Attributes and Permissions**?
