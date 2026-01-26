@@ -204,3 +204,58 @@ cat /app/data/*.json > /dev/null
 
 ```
 
+Here are the theory notes on Page Faults. In a Linux SRE context, understanding the difference between these two is the key to identifying if a performance issue is "CPU/Code related" or "Disk/Hardware related."
+
+# SRE Theory: Minor vs. Major Page Faults
+
+### 1. What is a Page Fault?
+
+A page fault is **not an error**. it is an interrupt handled by the CPU. It occurs when a process tries to access a page of memory that is not currently mapped in its **MMU** (Memory Management Unit).
+
+---
+
+### 2. Minor Page Fault (Soft Fault)
+
+A Minor Page Fault occurs when the data is **already in physical RAM**, but the process does not have a "pointer" (mapping) to it in its page table.
+
+* **How it happens:** * The process requests a new memory page (e.g., via `malloc`).
+* The process is using a shared library (like `libc.so`) that is already loaded in RAM by another process.
+* The data is sitting in the Kernel's **Page Cache**.
+
+
+* **Performance Impact:** **Very Low.** The kernel just needs to update the process's page table. It does not need to talk to the hardware.
+* **SRE View:** Thousands of minor faults per second are normal for a busy server.
+
+---
+
+### 3. Major Page Fault (Hard Fault)
+
+A Major Page Fault occurs when the data is **NOT in physical RAM**. The kernel must stop the process and go to the **Disk** to get the data.
+
+* **How it happens:**
+* **Swap:** The memory page was "swapped out" to the disk because the RAM was full.
+* **Demand Paging:** The process is reading a large file that hasn't been cached in RAM yet.
+* **Cold Start:** An application is starting up and loading its binary code from the disk.
+
+
+* **Performance Impact:** **Extreme.** Accessing RAM takes nanoseconds; accessing Disk (even SSD) takes milliseconds. A sudden spike in Major Faults will cause your application to "hang" or "stutter."
+* **SRE View:** Major faults are a red flag. They usually indicate **Memory Pressure** (RAM is full) or a **Slow Storage** bottleneck.
+
+---
+
+### 4. Summary Table for Troubleshooting
+
+| Feature | Minor Page Fault | Major Page Fault |
+| --- | --- | --- |
+| **Data Location** | Already in RAM | On Disk (Swap/Filesystem) |
+| **Disk I/O?** | No | **Yes** |
+| **Latency** | Minimal (Microseconds) | High (Milliseconds) |
+| **Metric Name** | `minflt` | `majflt` |
+| **SRE Action** | Usually Ignore | Increase RAM / Tune Swappiness |
+
+**Monitoring Tip:** You can see these in real-time by running `sar -B 1` and looking at the `majflt/s` column.
+
+---
+
+**Does this clear up the theory for you? If so, we can move to Scenario 3 (The Connection Refused Paradox).**
+

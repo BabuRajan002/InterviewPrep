@@ -9,8 +9,8 @@ Here is your final path to completion. Once these are done, you can confidently 
 | **Pillar 1** | **Process Lifecycle** | 3, 6, 24, 25, 26, 27 | Fork/Exec, COW, Zombies, and Orphans. | **COMPLETED** ✅ |
 | **Pillar 2** | **Signal Mastery** | 20, 21, 22 | Graceful shutdowns, Async-Safety, and PID 1. | **COMPLETED** ✅ |
 | **Pillar 3** | **The I/O Layer** | 4, 13, 14, 18 | **Unlinked but Open FDs**, Buffer Cache vs. Stdio. | **COMPLETED** ✅ |
-| **Pillar 4** | **Memory / OOM** | 7, 49, 50 | Virtual Memory, **OOM Score**, and Swappiness. | **PENDING** 🕒 |
-| **Pillar 5** | **Networking** | 57, 58, 59 | **TCP States** (TIME_WAIT/CLOSE_WAIT), Backlog. | **FINAL** 🕒 |
+| **Pillar 4** | **Memory / OOM** | 7, 49, 50 | Virtual Memory, **OOM Score**, and Swappiness. | **COMPLETED** ✅ |
+| **Pillar 5** | **Networking** | 57, 58, 59 | **TCP States** (TIME_WAIT/CLOSE_WAIT), Backlog. | **COMPLETED** ✅ |
 
 ---
 
