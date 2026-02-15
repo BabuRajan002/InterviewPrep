@@ -638,9 +638,3 @@ At **Morgan Stanley**, you might use this in a **Migration** or **Refactoring** 
 
 25. **Q:** How do you verify the version of the Terraform binary and the GCP provider you are using?
 * **A:** `terraform version`.
-
-
-
----
-
-**How do you feel about these first 25?** If you are comfortable, we can move to **Level 2: Modules & Infrastructure Reusability**, where we will build the "Host/Service Project" relationship in code. Would you like to proceed?
