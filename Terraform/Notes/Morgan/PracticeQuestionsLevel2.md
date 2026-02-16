@@ -412,6 +412,88 @@ When you run `terraform apply`, the GCS bucket will end up with **5 labels**:
 
 **41-50: Quickfire Scenario Round**
 41. **Q:** Can a module return a sensitive value? (Yes, but the output must be marked `sensitive = true`).
+
+## Follow-up: How it would have been defined in the output block? 
+
+In a banking environment like Morgan Stanley, you often deal with sensitive data—like **Database passwords**, **Service Account keys**, or **API secrets**.
+
+If you don't mark these as sensitive, Terraform will print them in plain text in your terminal and CI/CD logs (like Jenkins or GitHub Actions) during a `terraform apply`.
+
+Here is how you handle this across your configuration files.
+
+---
+
+### **1. The Module Definition (`modules/db/outputs.tf`)**
+
+Imagine your module creates a Cloud SQL user. You want to output the password so the application can use it, but you don't want it visible in the logs.
+
+```hcl
+# modules/db/main.tf
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+}
+
+# modules/db/outputs.tf
+output "db_password" {
+  value     = random_password.db_password.result
+  sensitive = true  # <--- This is the magic flag
+}
+
+```
+
+---
+
+### **2. The Root Configuration (`environments/dev/main.tf`)**
+
+When you call the module, Terraform knows the output is sensitive. However, if you want to see it in your "Root" outputs, you **must also** mark the root output as sensitive.
+
+```hcl
+module "my_database" {
+  source = "../../modules/db"
+}
+
+# You must repeat the sensitive flag here!
+output "final_db_password" {
+  value     = module.my_database.db_password
+  sensitive = true
+}
+
+```
+
+---
+
+### **3. The "Real-Time" Terminal Experience**
+
+When you run `terraform apply`, instead of seeing the password `P@ssw0rd123!`, you will see:
+
+```text
+Outputs:
+
+final_db_password = <sensitive>
+
+```
+
+---
+
+### **Important Warning for the Interview**
+
+**Interviewer:** *"Does marking a value as `sensitive = true` encrypt it in the State file?"*
+
+**Your Answer (The "Pro" Answer):**
+
+> "No. It is a common misconception. The `sensitive` flag only prevents the value from being printed to the **console/logs**. The value is still stored in **plain text** inside the `terraform.tfstate` file. This is why, at Morgan Stanley, we must protect our state files using GCS buckets with restricted IAM permissions and ensure the bucket itself is encrypted at rest."
+
+---
+
+### **How do you actually see the value if you need it?**
+
+If you genuinely need to see the password for a manual task, you can run:
+`terraform output -json`
+This will reveal the raw values. This is why access to the terminal where Terraform runs is a high-security privilege.
+
+---
+
 42. **Q:** How do you move a resource from the root main.tf into a module without destroying it? (Use `moved` blocks or `terraform state mv`).
 
 ## Follow-up: Can you explain how it can be achieved? 
@@ -502,19 +584,6 @@ Run `terraform plan`. It should show **"No changes"** because the state now perf
 ### **Level 2 Quickfire Round: Q41, 43-50**
 
 We covered 40 and 42. Here are the rest of the "reflex" answers:
-
-* **41. Sensitive values in modules?** Yes. Use `sensitive = true` in the module output.
-* **43. Where to store `providers.tf`?** In the **Root folder** (the environment). Modules should not contain provider blocks; they should only inherit them.
-* **44. What is `terraform graph`?** It outputs a visual dependency map (DOT format) of your resources. Great for debugging circular dependencies.
-* **45. Multiple regions in one module?** Call the module multiple times using `for_each = toset(["us-east1", "europe-west1"])`.
-* **46. What is `terraform get`?** It downloads/updates modules without initializing the backend or providers.
-* **47. SSH for Git modules?** Use `source = "git@github.com:org/repo.git//module_path"`.
-* **48. Testing in isolation?** Create an `examples/` directory in the module repo and run `terraform apply` there.
-* **49. Can a module access root variables?** No. Modules are **encapsulated**. You must explicitly pass every variable.
-* **50. Lock Terraform version?** Use the `terraform { required_version = ">= 1.5.0" }` block inside the module.
-
-**Shall we move to Level 3: Advanced State Management & CI/CD Pipelines?** (This is where things get very technical!)
-
 
 43. **Q:** Where do you store the `providers.tf`? (In the Root environment folder, NOT inside the module).
 44. **Q:** What is `terraform graph`? (Generates a visual map of resource dependencies).
