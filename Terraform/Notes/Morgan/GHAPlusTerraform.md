@@ -142,3 +142,98 @@ If you mention these 3 things, you will stand out from other candidates:
 3. **Artifacts for 'Apply':** Explain that you don't run `plan` and `apply` separately. You run `plan -out=tfplan`, upload it as an **Action Artifact**, and then download that *exact* file for the `apply` step. This ensures what you saw in the PR is exactly what gets deployed.
 
 **Would you like to deep-dive into the "Drift Detection" workflow or the "GCP Service Account Impersonation" logic?**
+
+That is a perfect pivot. Morgan Stanley values the "Enterprise Reality" of your work at Rakuten—how you manage scale, speed, and safety in a high-traffic environment.
+
+In this round, let’s focus on the **CI/CD Pipeline Architecture** (GitHub Actions), **Multi-Project Management**, and the **"Secure Supply Chain"** of your Terraform modules.
+
+---
+
+### **GCP & GitHub Actions: Round 2 (The Rakuten Scenarios)**
+
+#### **Q11: In your GitHub Actions workflow, how do you authenticate to GCP without using long-lived Service Account JSON keys?**
+
+**Answer:** I use **Workload Identity Federation (WIF)**.
+
+* **Why:** JSON keys are a security risk (they can be leaked/stolen). WIF allows GitHub Actions to exchange a short-lived OIDC token for a temporary GCP access token.
+* **Architecture:** I configure a Workload Identity Pool in GCP and map the GitHub repository (subject) to a specific Service Account with the required IAM roles.
+
+#### **Q12: How do you handle the "Plan vs. Apply" consistency problem in a CI/CD pipeline?**
+
+**Answer:** I use the **`-out` flag**.
+
+* **The Workflow:** The `plan` job runs `terraform plan -out=tfplan`. This binary file is uploaded as a **GitHub Artifact**.
+* **The Apply:** The `apply` job (which triggers only after PR merge or manual approval) downloads that specific artifact and runs `terraform apply tfplan`.
+* **Benefit:** This ensures that the *exact* changes reviewed in the PR are what get deployed, preventing "race conditions" where someone merges a second PR in between your plan and apply.
+
+#### **Q13: If a GitHub Action job fails halfway through a `terraform apply`, how do you handle the "Locked State"?**
+
+**Answer:** First, I check the GCS bucket to see if the `.tflock` file exists.
+
+* **In the Interview:** I would explain that I never manually delete the lock unless I've verified the GitHub runner has truly crashed. I would use `terraform force-unlock <LOCK_ID>`.
+* **Pro Tip:** To prevent this, I recommend setting a `concurrency` group in the GitHub YAML so only one workflow can run on a specific state file at a time.
+
+#### **Q14: How do you structure your Terraform repository for multiple GCP projects? One Repo per project or a Monorepo?**
+
+**Answer:** At Rakuten (and preferred by MS), we often use a **Monorepo with a directory-per-project** or **Terragrunt**.
+
+* **Structure:** ```text
+/environments
+/prod
+/project-billing-a
+/project-data-b
+/modules (or a separate repo for shared modules)
+```
+
+```
+
+
+* **Reason:** It allows for cross-project dependency management (e.g., Project B's firewall needs the IP output from Project A's Load Balancer).
+
+#### **Q15: How do you ensure that "Sensitive" values (like DB passwords) don't appear in the GitHub Action logs?**
+
+**Answer:** 1. I mark the variable as `sensitive = true` in Terraform.
+2. I use **GitHub Secret Masking**. If a value is stored in a GitHub Secret, GitHub automatically redacts it from the logs.
+3. **Advanced:** I prefer fetching the secret at *runtime* from **GCP Secret Manager** using a data source, rather than passing it as a GitHub Action environment variable.
+
+#### **Q16: How do you implement "Policy as Code" in your GitHub Actions before the code reaches GCP?**
+
+**Answer:** I integrate tools like **Checkov**, **TFLint**, or **Terrascan** as a "Pre-Plan" step.
+
+* **Scenario:** If a developer tries to create a GCS bucket without "Uniform Bucket Level Access" enabled, the GitHub Action job fails immediately, even before `terraform plan` runs.
+
+#### **Q17: How do you manage different "Environments" (Dev, Staging, Prod) in GitHub Actions?**
+
+**Answer:** I use **GitHub Environments**.
+
+* **The Setup:** I create three environments in the repo settings: `dev`, `stage`, and `prod`.
+* **The Protection:** The `prod` environment is configured with a **Required Reviewer**. The GitHub Action will pause at the `apply` step until a Lead Architect (like myself) clicks "Approve."
+
+#### **Q18: What is the "Remote State Data Source" strategy, and why is it crucial for cross-project collaboration?**
+
+**Answer:** It’s how we share data without hardcoding.
+
+* **Example:** The Network Team manages the VPC in Project A. My App Team in Project B needs to know the Subnet ID.
+* **The Code:** I use `data "terraform_remote_state"` to read the output of the Network Team's state file (stored in a shared GCS bucket). This creates a "read-only" link between our projects.
+
+#### **Q19: How do you handle "Module Versioning" when you need to push a breaking change to a shared module used by 5 different teams?**
+
+**Answer:** I use **Git Tags** (Semantic Versioning).
+
+1. I release the new version as `v2.0.0`.
+2. Teams continue to use `v1.x.x` (pinned in their source) so they don't break.
+3. I send a "Deprecation Notice" and the teams migrate to `v2.0.0` on their own sprint schedule.
+
+#### **Q20: How do you optimize GitHub Action runners for Terraform in a large-scale GCP environment?**
+
+**Answer:** I use **Self-Hosted Runners** on **GKE (Google Kubernetes Engine)**.
+
+* **Why:** GitHub-hosted runners are slow and have limited access. By running the "Actions Runner Controller" (ARC) on GKE within our VPC, the runner has direct, high-speed private access to our GCP resources without needing to go over the internet.
+
+---
+
+### **Ready for Round 3?**
+
+The next 10 will focus on **State File Refactoring (`moved` blocks), "Tainted" resources, and deep-dive GCP Networking with Terraform.**
+
+**Any of these 10 (Q11-Q20) you'd like me to expand on? Specifically regarding your experience with WIF or GKE runners?**
