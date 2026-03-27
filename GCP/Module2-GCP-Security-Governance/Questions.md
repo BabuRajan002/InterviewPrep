@@ -263,6 +263,295 @@ Memorise this distinction — interviewers love testing it.
 
 ---
 
+## Q7: How have you optimised GCP costs in production?
+
+Very strong answer Babu! This is your best answer so far. Real examples, real numbers, real thinking. Let me give you detailed feedback.
+
+---
+
+## What You Did Really Well ✅
+
+- **Multiple cost optimisation layers** — networking, compute, logging, scheduling
+- **Real Rakuten examples throughout** — pod rightsizing, log filtering, CronJobs
+- **HPA scaling to 1 in failover region** — very specific and impressive operational detail
+- **CDN mention** — shows architecture-level thinking
+- **Continuous improvement mindset** — good senior engineer thinking
+- **Managed vs manual cost comparison** — shows FinOps maturity
+- **Geographical awareness for cost + latency** — excellent opening
+
+---
+
+## What's Missing or Could Be Stronger ⚠️
+
+**1. The $2M figure needs correction**
+```
+You said:
+"saved around $2M infra computational costs 
+ in staging environment using CronJobs"
+
+This is factually wrong based on what you told me earlier!
+
+Actual story:
+$2M = avoided PENALTY CHARGES for missing VM EoL deadline
+      (data centre decommission — not staging CronJobs)
+
+2M Japanese Yen = saved from staging CronJob pod shutdown
+
+These are two different achievements — don't mix them up!
+Interviewers WILL probe on $2M and if your explanation 
+doesn't match → credibility damaged
+```
+
+**2. Missing structured FinOps framework**
+```
+Your answer was a list of examples
+A senior answer needs a framework:
+
+Visibility → Right-sizing → Architecture → Scheduling → Commitments
+```
+
+**3. Committed Use Discounts not mentioned**
+```
+For production stable workloads:
+CUDs = up to 57% discount on GCE/GKE nodes
+SUDs = automatic up to 30% for sustained usage
+These are significant cost levers — missing from your answer
+```
+
+**4. Log routing detail was vague**
+```
+You said: "filtered unwanted logs getting stored in GCS"
+
+Stronger version:
+"Configured GCP Log Routing exclusion filters to discard 
+ high-volume low-value logs before ingestion into Cloud Logging
+ — reducing logging ingestion and storage costs significantly"
+```
+
+**5. Billing export + visibility tools not mentioned**
+```
+FinOps starts with visibility:
+- Billing export to BigQuery
+- Looker Studio dashboards
+- Labels for cost attribution by team/env/app
+- Budget alerts per project
+```
+
+---
+
+## Stronger Version of Your Answer
+
+> *"I approach GCP cost optimisation across five dimensions — visibility, right-sizing, architecture, scheduling, and commitments.*
+>
+> *Starting with visibility — you can't optimise what you can't see. I'd set up billing export to BigQuery with Looker Studio dashboards showing costs by team, environment, and application using resource labels. Budget alerts per project ensure no surprises at month end.*
+>
+> *For right-sizing — at Rakuten I used GCP's built-in resource utilisation dashboards to compare actual CPU and memory usage against what was defined in Kubernetes pod specs. This identified significant over-provisioning and allowed us to rightsize pod requests and limits — directly reducing node count and compute costs.*
+>
+> *For architecture optimisation — I configured GCP Log Routing exclusion filters to discard high-volume, low-value logs before they were ingested into Cloud Logging — substantially reducing logging costs. For static content I'd use Cloud CDN to serve from edge rather than hitting origin storage on every request — reducing both latency and egress costs. Geographic awareness also matters — hosting workloads in the region closest to your users reduces network egress charges.*
+>
+> *For scheduling — I introduced Kubernetes CronJobs in our staging environment to automatically scale pod replicas to zero during non-business hours and restore them before business hours — saving approximately 2 million Japanese Yen monthly. For our active-passive dual region setup I automated scaling the failover region's HPA minimum to 1 after each release using a shell script — keeping it warm but not fully provisioned.*
+>
+> *For commitments — for stable production node pools I'd evaluate Committed Use Discounts — 1 or 3 year commitments giving up to 57% discount on compute. Combined with Sustained Use Discounts which apply automatically for nodes running more than 25% of a month, this significantly reduces the GKE node pool cost.*
+>
+> *The broader principle I follow is — you can't make all cost decisions at design time. Initial architecture should be cost-aware but real optimisation happens through continuous measurement and improvement over the long run."*
+
+---
+
+## Score
+
+| Criteria | Your Answer | Target |
+|---|---|---|
+| **Multiple cost layers covered** | ✅ Strong | Required |
+| **Real Rakuten examples** | ✅ Strong | Strong signal |
+| **$2M figure accuracy** | ❌ Wrong context | Critical fix |
+| **FinOps framework/structure** | ⚠️ Weak | Required |
+| **CUDs / SUDs** | ❌ Missing | Good to have |
+| **Billing visibility tools** | ❌ Missing | Required |
+| **Log routing detail** | ⚠️ Vague | Needed |
+| **Continuous improvement mindset** | ✅ Strong | Good signal |
+| **Overall** | **6.5/10** | **9/10** |
+
+---
+
+## Progress Tracker
+
+```
+Q1 Architecture      → 6.5/10
+Q2 Migration         → 7/10
+Q3 Landing Zone      → 4/10
+Q4 IAM               → 3/10
+Q5 VPC-SC            → 7/10
+Q7 Cost Optimisation → 6.5/10
+```
+
+---
+
+## 🚨 Most Important Fix Before Interview
+
+**Practise this distinction until it's automatic:**
+
+```
+$2M USD = Avoided internal penalty charges
+          by completing VM EoL migration to GKE CronJobs
+          on schedule — data centre decommission
+
+2M Japanese Yen = Monthly savings from staging environment
+                  CronJob pod shutdown during non-business hours
+
+These are TWO COMPLETELY DIFFERENT achievements
+Never mix them up in an interview — 
+an interviewer WILL ask "tell me more about that $2M"
+```
+
+---
+
+Ready for **Q8 — Committed Use Discounts vs Sustained Use Discounts**, or shall we jump to **Q9 — Networking**? 💪
+
+## Q9: Explain the difference between VPC Peering, Shared VPC, and PSC — when would you use each?
+
+Outstanding answer Babu! This is your best answer in the entire session. Let me give you detailed feedback.
+
+---
+
+## What You Did Exceptionally Well ✅
+
+- **VPC Peering** — transitive peering limitation explained perfectly with A→B→C example
+- **Route visibility security concern** — this is an advanced point most candidates miss
+- **Shared VPC** — real Rakuten architecture with incredible depth
+- **Dedicated Interconnect details** — VLAN attachments, BGP routing, Tokyo/Osaka redundancy, co-location facility — world class detail
+- **"No data encryption needed for physical connection"** — technically accurate and shows deep understanding
+- **Bandwidth contention concern in Shared VPC** — real operational pain point, very impressive
+- **PSC vs PSA distinction at the end** — excellent self-correction showing you know the difference
+- **Producer/Consumer network model** — correct PSC terminology
+
+This answer would genuinely impress a Google or Cloudflare interviewer.
+
+---
+
+## What's Missing or Could Be Stronger ⚠️
+
+**1. Shared VPC — one technical correction**
+
+```
+You said:
+"no data encryption needed since connecting physically"
+
+Technically more accurate:
+Dedicated Interconnect traffic is NOT encrypted by default
+Data travels over physical fiber — private but not encrypted
+
+For encryption you need:
+MACsec (Layer 2 encryption) on the physical link
+OR
+IPSec VPN over the Interconnect (MACsec-in-VPN)
+
+For most enterprise workloads private = sufficient
+But for PCI-DSS or highly regulated data → MACsec needed
+
+In an interview at BCE Group (Bell Canada = telecom = regulated)
+this distinction could come up
+```
+
+**2. PSC explanation — slightly incomplete**
+
+```
+You covered:
+✅ Consumer endpoint creation
+✅ Producer service attachment
+✅ Use case for connecting multiple VPCs
+
+Missing:
+- PSC for Google APIs (accessing BigQuery, GCS privately
+  without internet exposure)
+- PSC endpoints are regional — important operational detail
+- PSC vs VPC Peering for third party SaaS connectivity
+```
+
+**3. When to use each — summary was implicit not explicit**
+
+```
+You explained each well but never gave a clear
+"use X when..." summary
+
+Interviewers love a clear decision framework at the end
+```
+
+---
+
+## Stronger Closing to Add to YOUR Answer
+
+Just add this at the end of your answer:
+
+> *"To summarise when I'd use each — VPC Peering for simple, temporary, or same-team connectivity between two VPCs where you control both networks and IP ranges don't overlap. Shared VPC for enterprise multi-team environments where you need centralised network governance, shared on-premises connectivity, and clear project boundaries — exactly what we use at Rakuten. PSC when you need to access Google managed APIs or third-party producer services privately without VPC peering — especially when IP range conflicts make peering impossible or when you want service-level isolation rather than network-level connectivity."*
+
+---
+
+## Score
+
+| Criteria | Your Answer | Target |
+|---|---|---|
+| **VPC Peering explanation** | ✅ Excellent | Required |
+| **Transitive peering limitation** | ✅ Excellent | Required |
+| **Route visibility security concern** | ✅ Excellent | Senior signal |
+| **Shared VPC explanation** | ✅ Excellent | Required |
+| **Real Rakuten Interconnect details** | ✅ Outstanding | Strong signal |
+| **Bandwidth contention concern** | ✅ Excellent | Senior signal |
+| **PSC explanation** | ✅ Good | Required |
+| **PSC for Google APIs** | ⚠️ Missing | Good to have |
+| **Encryption on Interconnect** | ⚠️ Needs correction | BCE relevant |
+| **Clear when-to-use summary** | ⚠️ Implicit | Required |
+| **Overall** | **8.5/10** | **9/10** |
+
+---
+
+## Progress Tracker
+
+```
+Q1  Architecture        → 6.5/10
+Q2  Migration           → 7/10
+Q3  Landing Zone        → 4/10
+Q4  IAM                 → 3/10
+Q5  VPC-SC              → 7/10
+Q7  Cost Optimisation   → 6.5/10
+Q9  VPC/Shared/PSC      → 8.5/10  ← Best answer! 🏆
+```
+
+---
+
+## Clear Pattern Emerging
+
+```
+Topics with deep Rakuten hands-on experience:
+VPC/Networking → 8.5/10 ✅
+VPC-SC         → 7/10   ✅
+Migration      → 7/10   ✅
+
+Topics that are more conceptual / less hands-on:
+Landing Zone   → 4/10   ⚠️
+IAM            → 3/10   ⚠️
+```
+
+**The strategy going forward:**
+For conceptual topics — use the **NOPSB framework** and structured layered answers. For hands-on topics — keep doing exactly what you're doing — your real experience is your biggest differentiator.
+
+---
+
+## One Thing to Remember About Dedicated Interconnect
+
+```
+For BCE Group specifically (Bell Canada = telecom):
+They will likely ask about MACsec encryption on Interconnect
+
+Quick answer:
+"Dedicated Interconnect is private but not encrypted by default.
+ For regulated workloads we'd enable MACsec at Layer 2
+ for encryption over the physical link.
+ For most workloads the private physical connection
+ is sufficient given the co-location security controls."
+```
+
+---
+
 ## Q12: You need to migrate a 2TB MySQL database from on-premises to GCP with minimal downtime. How do you approach it?
 
 

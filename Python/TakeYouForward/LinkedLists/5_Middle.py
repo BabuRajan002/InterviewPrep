@@ -9,7 +9,7 @@ class Solution:
     
     def middleElement(self):
         slow = self.head 
-        fast = self.head 
+        fast = self.head.next
 
         while fast and fast.next:
             slow = slow.next 
