@@ -1,0 +1,10 @@
+2026-04-18 10:00:01 INFO User 'babu_s' logged in successfully.
+2026-04-18 10:00:05 ERROR Database connection timeout (host: db-01).
+2026-04-18 10:00:07 WARN Disk usage at 85% on /data.
+
+2026-04-18 10:00:10 INFO Background job 'cleanup' started.
+INVALID_LINE_NO_TIMESTAMP_OR_LEVEL
+2026-04-18 10:00:15 ERROR 
+2026-04-18 10:00:20 DEBUG Cache hit for key 'user_session_123'.
+2026-04-18 10:00:25 INFO Log rotation initiated.
+2026-04-18 10:00:28 ERROR Critical: Kernel panic detected in subsystem...

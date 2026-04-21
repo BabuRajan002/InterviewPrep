@@ -1,0 +1,6 @@
+[2026/04/19 20:00:01] error - Connection failed (ReqID: 5521)
+[2026-04-19 20:05:10] info - User login: admin
+[2026/04-19 20:10:00] ERROR - Database timeout (ReqID: 9982)
+[2026-04-19 20:15:30] error - Disk full - secondary partition
+[2026/04/19 20:20:45] info - Update successful
+[2026-04-19 20:25:00] ERROR - API Gateway Timeout (ReqID: 1024)
