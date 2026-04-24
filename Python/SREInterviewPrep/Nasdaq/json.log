@@ -1,0 +1,30 @@
+[
+    {
+        "service": "Auth-API",
+        "status": "healthy",
+        "latency_ms": 150,
+        "region": "us-east-1",
+        "last_check": "2026-04-24T10:00:00Z"
+    },
+    {
+        "service": "Trade-Engine",
+        "status": "degraded",
+        "latency_ms": 450,
+        "region": "us-east-1",
+        "last_check": "2026-04-24T10:00:05Z"
+    },
+    {
+        "service": "User-DB",
+        "status": "healthy",
+        "latency_ms": 50,
+        "region": "ap-south-1",
+        "last_check": "2026-04-24T10:00:10Z"
+    },
+    {
+        "service": "Payment-Gateway",
+        "status": "unstable",
+        "latency_ms": 1200,
+        "region": "eu-west-1",
+        "last_check": "2026-04-24T10:00:15Z"
+    }
+]
