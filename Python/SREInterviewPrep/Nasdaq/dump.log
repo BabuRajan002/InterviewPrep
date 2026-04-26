@@ -1,0 +1,8 @@
+[2026-04-26 10:00:01] INFO: LB_ACCESS client: 192.168.1.50, path: "/api/v1/trades", duration: 150ms
+DATA_EXPORT: Project "trading-engine-prod" cost: 450.75 USD status: SUCCESS
+[2026-04-26 10:00:05] WARN: K8S_EVENT Pod "order-processor-7d8b9" OOMKilled (Exit Code: 137)
+[2026-04-26 10:00:10] INFO: LB_ACCESS client: 172.16.0.5, path: "/healthz", duration: 45ms
+DATA_EXPORT: Project "auth-service-staging" cost: 12.50 USD status: SUCCESS
+[2026-04-26 10:00:15] INFO: LB_ACCESS client: 192.168.1.51, path: "/api/v1/user", duration: 300ms
+[2026-04-26 10:00:20] WARN: K8S_EVENT Pod "cache-node-01" OOMKilled (Exit Code: 137)
+DATA_EXPORT: Project "data-lake-v2" cost: 1200.00 USD status: SUCCESS
