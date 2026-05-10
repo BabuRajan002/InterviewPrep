@@ -1,0 +1,16 @@
+2026-04-27T21:20:01Z [POD:auth-7d8b9] service="auth-srv" status=200 latency=45ms
+2026-04-27T21:20:02Z [POD:pay-a1b2c] service="payment-gate" status=200 latency=150ms
+2026-04-27T21:20:03Z [POD:auth-7d8b9] service="auth-srv" status=500 latency=2200ms
+2026-04-27T21:20:05Z [POD:inv-99ff2] service="inventory-api" status=200 latency=12ms
+2026-04-27T21:20:06Z [POD:pay-a1b2c] service="payment-gate" status=503 latency=5000ms
+2026-04-27T21:20:08Z [POD:auth-7d8b9] service="auth-srv" status=200 latency=38ms
+2026-04-27T21:20:10Z [POD:inv-99ff2] service="inventory-api" status=504 latency=3000ms
+2026-04-27T21:20:12Z [POD:pay-a1b2c] service="payment-gate" status=200 latency=140ms
+2026-04-27T21:20:14Z [POD:auth-7d8b9] service="auth-srv" status=502 latency=1100ms
+2026-04-27T21:20:15Z [POD:auth-7d8b9] service="auth-srv" status=200 latency=42ms
+2026-04-27T21:20:18Z [POD:inv-99ff2] service="inventory-api" status=200 latency=15ms
+2026-04-27T21:20:20Z [POD:pay-a1b2c] service="payment-gate" status=500 latency=450ms
+2026-04-27T21:20:22Z [POD:auth-7d8b9] service="auth-srv" status=200 latency=50ms
+2026-04-27T21:20:25Z [POD:inv-99ff2] service="inventory-api" status=200 latency=10ms
+2026-04-27T21:20:28Z [POD:pay-a1b2c] service="payment-gate" status=200 latency=155ms
+2026-04-27T21:20:30Z [POD:extra-v1] service="empty-srv" status=200 latency=5ms
